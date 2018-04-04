@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#4caf50</color>
+    <color name="colorPrimaryDark">#43a047</color>
+    <color name="colorAccent">#42a5f5</color>
+    <!-- polygon colors -->
+    <color name="colorRough">#1b5e20</color>
+    <color name="colorFairway">#388e3c</color>
+    <color name="colorGreen">#66bb6a</color>
+    <color name="colorBunker">#dcbf9d</color>
+    <color name="colorWater">#4db6ac</color>
+</resources>
