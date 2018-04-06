@@ -1,11 +1,15 @@
 package recrec.golfcourseviewer;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
+import android.widget.EditText;
 
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
@@ -22,12 +26,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().
-                findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
-        // create the example hole
-        hole = new GolfHole();
+        // ask the user for a URL
+        showInputDialog();
     }
 
     @Override
@@ -57,6 +57,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 map.setMyLocationEnabled(true);
             }
         }
+    }
+
+    private void onServerSet(String url) {
+        // TODO attempt to fetch from the server
+        // create the example hole
+        hole = new GolfHole();
+
+        // display the map
+        SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().
+                findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+    }
+
+    /*----------------------------------------------------------------------------------------------
+     * showInputDialog
+     *
+     *     Displays an alert dialog with an input field that prompts the user for the URL of the
+     *     dev server.
+     */
+    private void showInputDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Enter server URL:");
+
+        final EditText input = new EditText(this);
+        input.setText("localhost");
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+        builder.setView(input);
+
+        // set up the ok button
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onServerSet(input.getText().toString());
+            }
+        });
+
+        builder.show();
     }
 
 }
