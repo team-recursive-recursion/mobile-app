@@ -6,8 +6,8 @@ public class GolfPolygon {
 
     public enum PolyType {
         TYPE_ROUGH,
-        TYPE_GREEN,
         TYPE_FAIRWAY,
+        TYPE_GREEN,
         TYPE_BUNKER,
         TYPE_WATER
     }

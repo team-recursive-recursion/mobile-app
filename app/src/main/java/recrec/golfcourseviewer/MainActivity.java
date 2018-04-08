@@ -14,12 +14,14 @@ import android.widget.EditText;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity
+        implements OnMapReadyCallback, ApiCallback {
 
     private final int PERMISSION_REQUEST = 0;
 
-    private GolfHole hole;
     private GoogleMap map;
+    private ApiRequest api;
+    private GolfHole hole;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,55 +35,86 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap map) {
         this.map = map;
-        // add the player marker
-        LatLng position = new LatLng(0.0, 0.0);
+
+        // attempt to request the player location
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
-            //map.addMarker(new MarkerOptions().position(position).title("Player"));
             // request the permissions
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST);
         } else {
             map.setMyLocationEnabled(true);
         }
+
         // draw the hole
-        hole.drawHole(getResources(), map);
+        if (hole != null) {
+            hole.drawHole(getResources(), map);
+        }
+
         // move the camera
+        // TODO center on the position of something useful
+        LatLng position = new LatLng(0.0, 0.0);
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 1.0f));
     }
 
     @Override
-    public void onRequestPermissionsResult(int request, String perm[], int[] grant) {
+    public void onRequestPermissionsResult(int request, String perm[],
+                                           int[] grant) {
         if (request == PERMISSION_REQUEST) {
-            if (grant.length > 0 && grant[0] == PackageManager.PERMISSION_GRANTED) {
-                map.setMyLocationEnabled(true);
+            if (grant.length > 0 && grant[0] ==
+                    PackageManager.PERMISSION_GRANTED) {
+                try {
+                    map.setMyLocationEnabled(true);
+                } catch (SecurityException e) {
+                    // this exception shouldn't be able to happen here
+                }
             }
         }
     }
 
-    private void onServerSet(String url) {
-        // TODO attempt to fetch from the server
-        // create the example hole
-        hole = new GolfHole();
+    @Override
+    public void receiveResponse(String resp, ApiRequest.RequestType type,
+                                ApiRequest.RequestResult res) {
+        if (res == ApiRequest.RequestResult.RES_SUCCESS) {
+            if (type == ApiRequest.RequestType.REQ_GET_COURSES) {
+                // TODO show a nice list to choose the course ID
+                final String COURSE_ID = "ef6fcf01-351f-45bd-881e-6251f718960d";
+                api.getPolygonsAsync(this, COURSE_ID);
+            } else if (type == ApiRequest.RequestType.REQ_GET_POLYGONS) {
+                // create the hole
+                hole = holeFromResponse(resp);
 
-        // display the map
-        SupportMapFragment mapFragment = (SupportMapFragment)getSupportFragmentManager().
-                findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+                // load the map
+                SupportMapFragment mapFragment = (SupportMapFragment)
+                        getSupportFragmentManager().
+                        findFragmentById(R.id.map);
+                mapFragment.getMapAsync(this);
+            } else {
+                showError("Unknown type");
+            }
+        } else {
+            showError("Response unsuccessful: " + resp);
+        }
     }
 
-    /*----------------------------------------------------------------------------------------------
-     * showInputDialog
+    private void onServerSet(String url) {
+        // attempt to fetch courses from the server
+        api = new ApiRequest(this, url);
+        api.getCoursesAsync(this);
+    }
+
+    /*--------------------------------------------------------------------------
+     * showInputDialog()
      *
-     *     Displays an alert dialog with an input field that prompts the user for the URL of the
-     *     dev server.
-     */
+     *     Displays an alert dialog with an input field that prompts the user
+     *     for the URL of the dev server.
+     *------------------------------------------------------------------------*/
     private void showInputDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter server URL:");
 
         final EditText input = new EditText(this);
-        input.setText("localhost");
+        input.setText("192.168.8.103");
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         builder.setView(input);
 
@@ -94,6 +127,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         builder.show();
+    }
+
+    private GolfHole holeFromResponse(String resp) {
+        GolfHole hole = new GolfHole();
+        // load polygons from the response
+        for (int i = 0; i < 1; ++i) {
+            // TODO don't hardcode here
+            GolfPolygon poly = new GolfPolygon(
+                    GolfPolygon.PolyType.TYPE_FAIRWAY);
+            poly.addPoint(-10.0, -10.0);
+            poly.addPoint(10.0, -10.0);
+            poly.addPoint(10.0, 10.0);
+            poly.addPoint(-10.0, 10.0);
+            hole.addPolygon(poly);
+        }
+        return hole;
+    }
+
+    private void showError(String title, String msg) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title)
+                .setMessage(msg)
+                .setPositiveButton("OK", null)
+                .show();
+    }
+
+    private void showError(String msg) {
+        showError("Error", msg);
     }
 
 }
