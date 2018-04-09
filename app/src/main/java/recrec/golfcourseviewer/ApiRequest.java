@@ -83,33 +83,22 @@ public class ApiRequest {
         client.newCall(req).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, final IOException e) {
-                caller.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        cb.receiveResponse(e.getMessage(), type, RequestResult.RES_EXCEPTION);
-                    }
-                });
+                cb.receiveResponse(e.getMessage(), type, RequestResult.RES_EXCEPTION);
             }
             @Override
             public void onResponse(Call call, final Response response) {
-                caller.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!response.isSuccessful()) {
-                            cb.receiveResponse(response.toString(), type,
-                                    RequestResult.RES_FAILURE);
-                        } else {
-
-                            try {
-                                cb.receiveResponse(response.body().string(), type,
-                                        RequestResult.RES_SUCCESS);
-                            } catch (IOException e) {
-                                cb.receiveResponse(e.getMessage(), type,
-                                        RequestResult.RES_EXCEPTION);
-                            }
-                        }
+                if (!response.isSuccessful()) {
+                    cb.receiveResponse(response.toString(), type,
+                            RequestResult.RES_FAILURE);
+                } else {
+                    try {
+                        cb.receiveResponse(response.body().string(), type,
+                                RequestResult.RES_SUCCESS);
+                    } catch (IOException e) {
+                        cb.receiveResponse(e.getMessage(), type,
+                                RequestResult.RES_EXCEPTION);
                     }
-                });
+                }
             }
         });
     }

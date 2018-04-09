@@ -14,6 +14,9 @@ import android.widget.EditText;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ApiCallback {
 
@@ -73,28 +76,42 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void receiveResponse(String resp, ApiRequest.RequestType type,
-                                ApiRequest.RequestResult res) {
-        if (res == ApiRequest.RequestResult.RES_SUCCESS) {
-            if (type == ApiRequest.RequestType.REQ_GET_COURSES) {
-                // TODO show a nice list to choose the course ID
-                final String COURSE_ID = "ef6fcf01-351f-45bd-881e-6251f718960d";
-                api.getPolygonsAsync(this, COURSE_ID);
-            } else if (type == ApiRequest.RequestType.REQ_GET_POLYGONS) {
-                // create the hole
-                hole = holeFromResponse(resp);
+    public void receiveResponse(final String resp, final ApiRequest.RequestType type,
+                                final ApiRequest.RequestResult res) {
+        // run the response on the main thread
+        final OnMapReadyCallback mcb = this;
+        final ApiCallback cb = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (res == ApiRequest.RequestResult.RES_SUCCESS) {
 
-                // load the map
-                SupportMapFragment mapFragment = (SupportMapFragment)
-                        getSupportFragmentManager().
-                        findFragmentById(R.id.map);
-                mapFragment.getMapAsync(this);
-            } else {
-                showError("Unknown type");
+                    if (type == ApiRequest.RequestType.REQ_GET_COURSES) {
+
+                        // TODO show a nice list to choose the course ID
+                        final String COURSE_ID = "ef6fcf01-351f-45bd-881e-6251f718960d";
+                        api.getPolygonsAsync(cb, COURSE_ID);
+
+                    } else if (type == ApiRequest.RequestType.REQ_GET_POLYGONS) {
+                        // create the hole
+                        try {
+                            hole = holeFromResponse(resp);
+                        } catch (Exception e) {
+                            // TODO improve errors and ask for another course
+                            hole = null;
+                            showError(e.getMessage());
+                        }
+                        // load the map
+                        SupportMapFragment mapFragment = (SupportMapFragment)
+                                getSupportFragmentManager().
+                                        findFragmentById(R.id.map);
+                        mapFragment.getMapAsync(mcb);
+                    }
+                } else {
+                    showError("Response unsuccessful: " + resp);
+                }
             }
-        } else {
-            showError("Response unsuccessful: " + resp);
-        }
+        });
     }
 
     private void onServerSet(String url) {
@@ -129,17 +146,48 @@ public class MainActivity extends AppCompatActivity
         builder.show();
     }
 
-    private GolfHole holeFromResponse(String resp) {
+    private GolfHole holeFromResponse(String resp) throws Exception {
         GolfHole hole = new GolfHole();
-        // load polygons from the response
-        for (int i = 0; i < 1; ++i) {
-            // TODO don't hardcode here
-            GolfPolygon poly = new GolfPolygon(
-                    GolfPolygon.PolyType.TYPE_FAIRWAY);
-            poly.addPoint(-10.0, -10.0);
-            poly.addPoint(10.0, -10.0);
-            poly.addPoint(10.0, 10.0);
-            poly.addPoint(-10.0, 10.0);
+        JSONArray jObjects = new JSONArray(resp);
+        // load polygons and points from the response
+        for (int i = 0; i < jObjects.length(); ++i) {
+            // TODO extend to show points (such as flag, tee, etc.)
+            JSONObject jObj = jObjects.getJSONObject(i);
+
+            // determine the type
+            GolfPolygon.PolyType type;
+            switch (jObj.getInt("type")) {
+                case 0:
+                    type = GolfPolygon.PolyType.TYPE_ROUGH;
+                    break;
+                case 1:
+                    type = GolfPolygon.PolyType.TYPE_ROUGH;
+                    break;
+                case 2:
+                    type = GolfPolygon.PolyType.TYPE_ROUGH;
+                    break;
+                case 3:
+                    type = GolfPolygon.PolyType.TYPE_ROUGH;
+                    break;
+                case 4:
+                    type = GolfPolygon.PolyType.TYPE_ROUGH;
+                    break;
+                default:
+                    throw new Exception("The hole contains an invalid polygon type");
+            }
+
+            // create the polygon
+            GolfPolygon poly = new GolfPolygon(type);
+            JSONArray coords = jObj.getJSONObject("polygon")
+                    .getJSONArray("coordinates")
+                    .getJSONArray(0);
+            for (int j = 0; j < coords.length(); ++j) {
+                JSONArray pair = coords.getJSONArray(j);
+                double lat = pair.getDouble(1);
+                double lon = pair.getDouble(0);
+                poly.addPoint(lat, lon);
+            }
+
             hole.addPolygon(poly);
         }
         return hole;
