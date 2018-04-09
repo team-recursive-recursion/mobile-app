@@ -12,12 +12,6 @@ public class GolfHole {
 
     public GolfHole() {
         polygons = new LinkedList<>();
-        // TODO remove hardcoded polygons and fetch from API
-        GolfPolygon p = new GolfPolygon(GolfPolygon.PolyType.TYPE_ROUGH);
-        p.addPoint(-20.0, -20.0);
-        p.addPoint(20.0, -20.0);
-        p.addPoint(0.0, 20.0);
-        polygons.add(p);
     }
 
     public void addPolygon(GolfPolygon poly) {
