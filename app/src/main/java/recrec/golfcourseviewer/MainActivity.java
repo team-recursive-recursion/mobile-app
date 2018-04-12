@@ -2,8 +2,12 @@ package recrec.golfcourseviewer;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -47,17 +51,13 @@ public class MainActivity extends AppCompatActivity
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST);
         } else {
             map.setMyLocationEnabled(true);
+            centerOnPlayer();
         }
 
         // draw the hole
         if (hole != null) {
             hole.drawHole(getResources(), map);
         }
-
-        // move the camera
-        // TODO center on the position of something useful
-        LatLng position = new LatLng(0.0, 0.0);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 1.0f));
     }
 
     @Override
@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity
                     PackageManager.PERMISSION_GRANTED) {
                 try {
                     map.setMyLocationEnabled(true);
+                    centerOnPlayer();
                 } catch (SecurityException e) {
                     // this exception shouldn't be able to happen here
                 }
@@ -120,6 +121,27 @@ public class MainActivity extends AppCompatActivity
         api.getCoursesAsync(this);
     }
 
+    private void centerOnPlayer() throws SecurityException {
+        if (map != null) {
+            LocationManager locationManager = (LocationManager)getSystemService
+                    (Context.LOCATION_SERVICE);
+            Criteria criteria = new Criteria();
+            Location location = locationManager.getLastKnownLocation(locationManager
+                    .getBestProvider(criteria, false));
+            if (location != null)
+            {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
+                        location.getLatitude(), location.getLongitude()), 13));
+
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(new LatLng(location.getLatitude(), location.getLongitude()))
+                        .zoom(17)
+                        .build();
+                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
+        }
+    }
+
     /*--------------------------------------------------------------------------
      * showInputDialog()
      *
@@ -131,7 +153,7 @@ public class MainActivity extends AppCompatActivity
         builder.setTitle("Enter server URL:");
 
         final EditText input = new EditText(this);
-        input.setText("192.168.8.103");
+        input.setText("192.168.8.100");
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         builder.setView(input);
 
@@ -161,16 +183,16 @@ public class MainActivity extends AppCompatActivity
                     type = GolfPolygon.PolyType.TYPE_ROUGH;
                     break;
                 case 1:
-                    type = GolfPolygon.PolyType.TYPE_ROUGH;
+                    type = GolfPolygon.PolyType.TYPE_FAIRWAY;
                     break;
                 case 2:
-                    type = GolfPolygon.PolyType.TYPE_ROUGH;
+                    type = GolfPolygon.PolyType.TYPE_GREEN;
                     break;
                 case 3:
-                    type = GolfPolygon.PolyType.TYPE_ROUGH;
+                    type = GolfPolygon.PolyType.TYPE_BUNKER;
                     break;
                 case 4:
-                    type = GolfPolygon.PolyType.TYPE_ROUGH;
+                    type = GolfPolygon.PolyType.TYPE_WATER;
                     break;
                 default:
                     throw new Exception("The hole contains an invalid polygon type");
