@@ -1,4 +1,4 @@
-package recrec.golfcourseviewer;
+package recrec.golfcourseviewer.Requests;
 
 public interface ApiCallback {
 

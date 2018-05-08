@@ -1,7 +1,7 @@
-package recrec.golfcourseviewer;
+package recrec.golfcourseviewer.Requests;
 
 import android.app.Activity;
-import android.util.Log;
+import android.content.Context;
 
 import java.io.IOException;
 
@@ -10,36 +10,38 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import recrec.golfcourseviewer.R;
 
 public class ApiRequest {
 
-    enum RequestType {
+    public enum RequestType {
         REQ_GET_COURSES,
         REQ_GET_POLYGONS,
         REQ_CREATE_COURSE,
         REQ_ADD_POLYGON
     }
 
-    enum RequestResult {
+    public enum RequestResult {
         RES_EXCEPTION,
         RES_FAILURE,
         RES_SUCCESS
     }
 
     private String url;
-    private Activity caller;
+    private Context context;
 
-    public ApiRequest(Activity caller, String url) {
+    public ApiRequest(Context context, String url) {
+        this.context = context;
         setUrl(url);
-        this.caller = caller;
     }
 
     public void setUrl(String url) {
-        if (!url.startsWith("http://")) {
-            url = "http://" + url;
+        if (!url.startsWith(context.getString(R.string.http_beginning))) {
+
+            url = context.getString(R.string.http_beginning)+ url;
         }
-        if (!url.endsWith(":5001")) {
-            url = url + ":5001";
+        if (!url.endsWith(context.getString(R.string.api_port_end))) {
+            url = url + context.getString(R.string.api_port_end);
         }
         this.url = url;
     }

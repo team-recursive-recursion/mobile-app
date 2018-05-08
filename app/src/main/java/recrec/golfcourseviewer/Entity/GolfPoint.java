@@ -1,4 +1,4 @@
-package recrec.golfcourseviewer;
+package recrec.golfcourseviewer.Entity;
 
 public class GolfPoint {
 

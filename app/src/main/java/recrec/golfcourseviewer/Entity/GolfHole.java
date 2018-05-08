@@ -1,10 +1,12 @@
-package recrec.golfcourseviewer;
+package recrec.golfcourseviewer.Entity;
 
 import android.content.res.Resources;
 import java.util.LinkedList;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolygonOptions;
+
+import recrec.golfcourseviewer.R;
 
 public class GolfHole {
 
