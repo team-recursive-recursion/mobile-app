@@ -2,6 +2,9 @@ package recrec.golfcourseviewer.Activity;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -9,6 +12,7 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -26,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import recrec.golfcourseviewer.Entity.ResponseViewModel;
 import recrec.golfcourseviewer.Fragments.GolfCourseListFragment;
 import recrec.golfcourseviewer.Fragments.Map;
 import recrec.golfcourseviewer.Entity.GolfHole;
@@ -50,6 +55,7 @@ public class MainActivity extends AppCompatActivity
     private AppDatabase db;
 
     private String responce;
+    public ResponseViewModel responseViewModel;
 
 
     @Override
@@ -57,6 +63,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(recrec.golfcourseviewer.R.layout.activity_main);
 
+        responseViewModel = ViewModelProviders.of(this).get(ResponseViewModel.class);
+        subscribe();
         // ask the user for a URL
         showInputDialog();
         BottomNavigationView navigation = (BottomNavigationView) findViewById(recrec.golfcourseviewer.R.id.navigation);
@@ -64,6 +72,19 @@ public class MainActivity extends AppCompatActivity
         setFragment("Map");
 
         createDb();
+    }
+
+    private void subscribe(){
+        responseViewModel.courseNamesAndIdJSON.observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String s) {
+                try {
+                    populateDbFromResponse(s);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -116,21 +137,18 @@ public class MainActivity extends AppCompatActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                Log.d("RunOnUiThread", "in Run");
                 if (res == ApiRequest.RequestResult.RES_SUCCESS) {
 
                     if (type == ApiRequest.RequestType.REQ_GET_COURSES) {
-                        try {
-                            populateDbFromResponse(resp);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        responseViewModel.courseNamesAndIdJSON.setValue(resp);
 
                     } else if (type == ApiRequest.RequestType.REQ_GET_POLYGONS) {
                         // create the hole
                         try {
 
-                            hole = holeFromResponse(resp);
                             responce = resp;
+                            hole = holeFromResponse(resp);
                         } catch (Exception e) {
                             // TODO improve errors and ask for another course
                             hole = null;
@@ -150,6 +168,9 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
+//        if (type == ApiRequest.RequestType.REQ_GET_POLYGONS){
+//        }
 
     }
 
@@ -195,12 +216,13 @@ public class MainActivity extends AppCompatActivity
 
     private void centerOnCourse(String resp) throws JSONException {
         if (map != null) {
-            JSONArray jObjects = new JSONArray(resp);
-            JSONObject jObj = jObjects.getJSONObject(0);
-            JSONArray coords = jObj.getJSONObject("polygon")
-                    .getJSONArray("coordinates")
-                    .getJSONArray(0);
-            LatLng coordsLL = new LatLng(coords.getJSONArray(0).getDouble(1), coords.getJSONArray(0).getDouble(0));
+            JSONArray courseElements = new JSONObject(resp).getJSONArray("courseElements");
+            String geoJson = courseElements.getJSONObject(0).getString("geoJson");
+            JSONObject geoJsonObject = new JSONObject(geoJson);
+            JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0).getJSONArray(0);
+            double lat = coords.getDouble(1);
+            double lon = coords.getDouble(0);
+            LatLng coordsLL = new LatLng(lat, lon);
 
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordsLL, 15f));
 
@@ -234,7 +256,7 @@ public class MainActivity extends AppCompatActivity
 
     private GolfHole holeFromResponse(String resp) throws Exception {
         GolfHole hole = new GolfHole();
-        JSONArray jObjects = new JSONArray(resp);
+        JSONArray jObjects = new JSONObject(resp).getJSONArray("courseElements");
         // load polygons and points from the response
         for (int i = 0; i < jObjects.length(); ++i) {
             // TODO extend to show points (such as flag, tee, etc.)
@@ -264,9 +286,10 @@ public class MainActivity extends AppCompatActivity
 
             // create the polygon
             GolfPolygon poly = new GolfPolygon(type);
-            JSONArray coords = jObj.getJSONObject("polygon")
-                    .getJSONArray("coordinates")
-                    .getJSONArray(0);
+            String geoJson = jObj.getString("geoJson");
+            JSONObject geoJsonObject = new JSONObject(geoJson);
+
+            JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0);
             for (int j = 0; j < coords.length(); ++j) {
                 JSONArray pair = coords.getJSONArray(j);
                 double lat = pair.getDouble(1);

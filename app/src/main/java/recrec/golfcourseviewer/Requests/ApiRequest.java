@@ -57,7 +57,7 @@ public class ApiRequest {
      *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
     public void getCoursesAsync(ApiCallback cb) {
         // create the request
-        String target = url + "/GolfCourse/GetCourses";
+        String target = url + "/api/GolfCoursesNew";
         Request req = new Request.Builder()
                 .url(target)
                 .build();
@@ -72,7 +72,7 @@ public class ApiRequest {
      *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
     public void getPolygonsAsync(ApiCallback cb, String courseId) {
         // create the request
-        String target = url + "/GolfCourse/GetPolygons?courseId=" + courseId;
+        String target = url + "/api/GolfCoursesNew/" + courseId;
         Request req = new Request.Builder()
                 .url(target)
                 .build();
