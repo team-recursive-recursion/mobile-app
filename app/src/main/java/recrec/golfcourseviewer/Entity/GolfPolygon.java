@@ -1,6 +1,8 @@
-package recrec.golfcourseviewer;
+package recrec.golfcourseviewer.Entity;
 
 import java.util.ArrayList;
+
+import recrec.golfcourseviewer.Entity.GolfPoint;
 
 public class GolfPolygon {
 
