@@ -2,7 +2,6 @@ package recrec.golfcourseviewer.Activity;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -23,6 +22,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.EditText;
 
+import com.google.android.gms.common.api.Api;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
@@ -30,16 +30,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.Entity.ResponseViewModel;
 import recrec.golfcourseviewer.Fragments.GolfCourseListFragment;
+import recrec.golfcourseviewer.Fragments.HolesListFragment;
 import recrec.golfcourseviewer.Fragments.Map;
 import recrec.golfcourseviewer.Entity.GolfHole;
 import recrec.golfcourseviewer.Entity.GolfPolygon;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.ApiCallback;
+import recrec.golfcourseviewer.Requests.ApiClientRF;
 import recrec.golfcourseviewer.Requests.ApiRequest;
+import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import recrec.golfcourseviewer.db.AppDatabase;
-import recrec.golfcourseviewer.db.Models.GolfCourseModel;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ApiCallback {
@@ -50,12 +53,13 @@ public class MainActivity extends AppCompatActivity
     private ApiRequest api;
     private GolfHole hole;
 
-    private GolfCourseListFragment courseListFrag;
-    private Map mapFrag;
+
     private AppDatabase db;
 
     private String responce;
     public ResponseViewModel responseViewModel;
+    public CourseViewModel golfCourseListViewModel;
+    public ApiCallback callback = this;
 
 
     @Override
@@ -64,6 +68,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(recrec.golfcourseviewer.R.layout.activity_main);
 
         responseViewModel = ViewModelProviders.of(this).get(ResponseViewModel.class);
+        golfCourseListViewModel = ViewModelProviders.of(this).get(CourseViewModel.class);
         subscribe();
         // ask the user for a URL
         showInputDialog();
@@ -75,14 +80,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void subscribe(){
-        responseViewModel.courseNamesAndIdJSON.observe(this, new Observer<String>() {
+        golfCourseListViewModel.courseID.observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
-                try {
-                    populateDbFromResponse(s);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                setFragment("HolesList");
+            }
+        });
+
+        golfCourseListViewModel.holeID.observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String s) {
+                setFragment("Map");
+                ApiClientRF client = ServiceGenerator.getService();
+
             }
         });
     }
@@ -99,10 +109,12 @@ public class MainActivity extends AppCompatActivity
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST);
         } else {
             map.setMyLocationEnabled(true);
-//            centerOnPlayer();
+            centerOnPlayer();
         }
         try {
-            centerOnCourse(responce);
+            if(responce != null){
+                centerOnCourse(responce);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -141,50 +153,31 @@ public class MainActivity extends AppCompatActivity
                 if (res == ApiRequest.RequestResult.RES_SUCCESS) {
 
                     if (type == ApiRequest.RequestType.REQ_GET_COURSES) {
-                        responseViewModel.courseNamesAndIdJSON.setValue(resp);
 
                     } else if (type == ApiRequest.RequestType.REQ_GET_POLYGONS) {
                         // create the hole
                         try {
-
-                            responce = resp;
-                            hole = holeFromResponse(resp);
+//                            hole = holeFromResponse(resp);
                         } catch (Exception e) {
                             // TODO improve errors and ask for another course
                             hole = null;
                             showError(e.getMessage());
                         }
-                        // load the map
-                        Map activeMapFragment = (Map) getSupportFragmentManager()
-                                .findFragmentById(recrec.golfcourseviewer.R.id.fragment_container);
-                        SupportMapFragment mapFragment = (SupportMapFragment)
-                                activeMapFragment.getChildFragmentManager().
-                                        findFragmentById(recrec.golfcourseviewer.R.id.map);
-                        mapFragment.getMapAsync(mcb);
 
                     }
+                    // load the map
+                    Map activeMapFragment = (Map) getSupportFragmentManager()
+                            .findFragmentById(recrec.golfcourseviewer.R.id.fragment_container);
+                    SupportMapFragment mapFragment = (SupportMapFragment)
+                            activeMapFragment.getChildFragmentManager().
+                                    findFragmentById(recrec.golfcourseviewer.R.id.map);
+                    mapFragment.getMapAsync(mcb);
                 } else {
                     showError("Response unsuccessful: " + resp);
                 }
-            }
-        });
-
-//        if (type == ApiRequest.RequestType.REQ_GET_POLYGONS){
-//        }
-
-    }
-
-    public void getPolygonsFromAdapter(final String courseId, final MainActivity mainActivity){
-        Log.d("DO NOT DO THIS IN R L", courseId);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                api.getPolygonsAsync(mainActivity, courseId);
 
             }
         });
-
-        setFragment("Map");
     }
 
     private void onServerSet(String url) {
@@ -247,7 +240,10 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                onServerSet(input.getText().toString());
+//                onServerSet(input.getText().toString());
+                String baseUrl = "http://"+input.getText().toString() + ":5001/";
+                ServiceGenerator.setBaseUrl(baseUrl );
+
             }
         });
 
@@ -323,7 +319,7 @@ public class MainActivity extends AppCompatActivity
             switch (item.getItemId()) {
                 case recrec.golfcourseviewer.R.id.navigation_list:
                     Log.d("ITEM", "List");
-                    setFragment("GolfCourseListFragment");
+                    setFragment("CourseList");
                     return true;
                 case recrec.golfcourseviewer.R.id.navigation_map:
                     Log.d("ITEM","MAP");
@@ -335,6 +331,9 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    private GolfCourseListFragment courseListFrag;
+    private Map mapFrag;
+    private HolesListFragment holesListFragment;
 
     public void setFragment(String fragName){
         android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -351,17 +350,26 @@ public class MainActivity extends AppCompatActivity
             ft.commit();
 
         }
-        if(fragName == "GolfCourseListFragment"){
+        if(fragName == "CourseList"){
             if(courseListFrag == null){
                 courseListFrag = new GolfCourseListFragment();
-                //fixme: Fix this
-                courseListFrag.mainActivity = this;
                 ft.add(R.id.fragment_container,courseListFrag,"List");
             }
             if(mapFrag != null){
                 ft.detach(getSupportFragmentManager().findFragmentByTag("Map"));
             }
             ft.attach(courseListFrag);
+            ft.commit();
+        }
+        if(fragName == "HolesList"){
+            if(holesListFragment == null){
+                holesListFragment = new HolesListFragment();
+                ft.add(R.id.fragment_container, holesListFragment, "Holes");
+            }
+            if(mapFrag != null){
+                ft.detach(getSupportFragmentManager().findFragmentByTag("List"));
+            }
+            ft.attach(holesListFragment);
             ft.commit();
         }
     }
@@ -374,15 +382,15 @@ public class MainActivity extends AppCompatActivity
 *
 *       Takes a Jason string from response and populate a Room Database
 * ++++++++++++++++++++++++++++++++++++++++++++++*/
-    private void populateDbFromResponse(String resp) throws Exception{
-        JSONArray courses = new JSONArray(resp);
-        for(int i = 0; i< courses.length(); i++){
-            JSONObject jcourse = courses.getJSONObject(i);
-            GolfCourseModel gcm = new GolfCourseModel();
-            gcm.CourseName = jcourse.getString("courseName");
-            gcm.CourseId = jcourse.getString("courseId");
-            db.golfCourseModel().insertGolfCourse(gcm);
-        }
-    }
+//    private void populateDbFromResponse(String resp) throws Exception{
+//        JSONArray courses = new JSONArray(resp);
+//        for(int i = 0; i< courses.length(); i++){
+//            JSONObject jcourse = courses.getJSONObject(i);
+//            GolfCourseModel gcm = new GolfCourseModel();
+//            gcm.CourseName = jcourse.getString("courseName");
+//            gcm.CourseId = jcourse.getString("courseId");
+//            db.golfCourseModel().insertGolfCourse(gcm);
+//        }
+//    }
 
 }
