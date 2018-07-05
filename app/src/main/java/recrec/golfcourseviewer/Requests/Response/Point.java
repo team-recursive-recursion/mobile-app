@@ -1,14 +1,12 @@
 package recrec.golfcourseviewer.Requests.Response;
 
-public class PolygonElement {
-    private int polygonType;
+public class Point {
+
+
     private String geoJson;
     private String holeId;
     private String courseId;
-
-    public int getPolygonType() {
-        return polygonType;
-    }
+    private String info;
 
     public String getGeoJson() {
         return geoJson;
@@ -22,5 +20,5 @@ public class PolygonElement {
         return courseId;
     }
 
-
+    public String getInfo() {return info;}
 }

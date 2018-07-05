@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import recrec.golfcourseviewer.Entity.CourseViewModel;
+import recrec.golfcourseviewer.Entity.GolfInfoPoint;
 import recrec.golfcourseviewer.Fragments.GolfCourseListFragment;
 import recrec.golfcourseviewer.Fragments.HolesListFragment;
 import recrec.golfcourseviewer.Fragments.Map;
@@ -45,6 +46,7 @@ import recrec.golfcourseviewer.Requests.ApiCallback;
 import recrec.golfcourseviewer.Requests.ApiClientRF;
 import recrec.golfcourseviewer.Requests.ApiRequest;
 import recrec.golfcourseviewer.Requests.Response.Hole;
+import recrec.golfcourseviewer.Requests.Response.Point;
 import recrec.golfcourseviewer.Requests.Response.PolygonElement;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import recrec.golfcourseviewer.db.AppDatabase;
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity
     private GoogleMap map;
     private ApiRequest api;
     private GolfHole hole;
+    private GolfInfoPoint point;
 
 
     private AppDatabase db;
@@ -83,6 +86,7 @@ public class MainActivity extends AppCompatActivity
         setFragment("Map");
 
         hole = new GolfHole();
+        point = new GolfInfoPoint();
     }
 
     private void subscribe(){
@@ -199,17 +203,44 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        //Get Hole Polygons from hashMap
-//        for (Object o : holeHash.values()) {
-//            for (PolygonElement p : (List<PolygonElement>) o) {
-//                try {
-//                    holeFromResponse(p, course);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//        golfCourseListViewModel.holeCallResponded.setValue(true);
+        Call<List<Point>> callPoint = client.getPointElementsById(golfCourseListViewModel
+                .holeID.getValue());
+        callPoint.enqueue(new Callback<List<Point>>() {
+            @Override
+            public void onResponse(Call<List<Point>> call, @NonNull Response<List<Point>> response) {
+                for(Point poly : response.body()){
+                    try {
+                        pointFromResponse(poly, course);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Point>> call, Throwable t) {
+                Log.d("Point Call", "Fail: " + t.getMessage());
+            }
+        });
+
+    }
+
+    private void pointFromResponse(Point resp, GolfHole hole) throws Exception {
+        if (point == null){
+            point = new GolfInfoPoint();
+        }
+        String geoJson = resp.getGeoJson();
+        JSONObject geoJsonObject = new JSONObject(geoJson);
+
+        JSONArray coords = geoJsonObject.getJSONArray("coordinates");
+        double val1 = coords.getDouble(0);
+        double val2 = coords.getDouble(1);
+
+        point.setLat(val1);
+        point.setLat(val2);
+        point.setInfo(resp.getInfo());
+
     }
 
     private void holeFromResponse(PolygonElement resp, GolfHole hole) throws Exception {
@@ -275,6 +306,12 @@ public class MainActivity extends AppCompatActivity
             mapReady = true;
         }
 
+        //draw the point
+        if (point != null){
+            point.drawInfoPoint(getResources(), map);
+        }
+
+        //map.setOnInfoWindowClickListener(this);
     }
 
     @Override
