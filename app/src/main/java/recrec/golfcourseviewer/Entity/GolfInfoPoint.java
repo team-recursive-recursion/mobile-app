@@ -28,7 +28,7 @@ public class GolfInfoPoint {
     }
 
     public void drawInfoPoint(Resources res, GoogleMap map){
-        LatLng latlonObj = new LatLng(  lon,lat);
+        LatLng latlonObj = new LatLng(lon,lat);
         MarkerOptions opt = new MarkerOptions();
 
         opt.position(latlonObj);

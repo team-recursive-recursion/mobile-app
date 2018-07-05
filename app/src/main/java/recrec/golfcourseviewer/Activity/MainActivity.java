@@ -238,7 +238,7 @@ public class MainActivity extends AppCompatActivity
         double val2 = coords.getDouble(1);
 
         point.setLat(val1);
-        point.setLat(val2);
+        point.setLon(val2);
         point.setInfo(resp.getInfo());
 
     }
