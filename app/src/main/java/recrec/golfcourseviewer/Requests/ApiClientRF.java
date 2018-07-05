@@ -3,6 +3,7 @@ package recrec.golfcourseviewer.Requests;
 import java.util.List;
 
 import recrec.golfcourseviewer.Requests.Response.Course;
+import recrec.golfcourseviewer.Requests.Response.Point;
 import recrec.golfcourseviewer.Requests.Response.PolygonElement;
 import recrec.golfcourseviewer.Requests.Response.Holes;
 import retrofit2.Call;
@@ -22,4 +23,7 @@ public interface ApiClientRF {
 
     @GET("api/holes/{holeId}/polygons")
     Call<List<PolygonElement>> getHoleElementsById(@Path("holeId") String holeId);
+
+    @GET("api/holes/{holeId}/points")
+    Call<List<Point>> getPointElementsById(@Path("holeId") String holeId);
 }
