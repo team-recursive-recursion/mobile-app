@@ -82,8 +82,6 @@ public class MainActivity extends AppCompatActivity
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         setFragment("Map");
 
-        createDb();
-
         hole = new GolfHole();
     }
 
@@ -99,8 +97,9 @@ public class MainActivity extends AppCompatActivity
         golfCourseListViewModel.holeID.observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
-                setFragment("Map");
                 createCourse(hole);
+
+                setFragment("Map");
                 // load the map
                 Map activeMapFragment = (Map) getSupportFragmentManager()
                         .findFragmentById(R.id.fragment_container);
@@ -108,7 +107,6 @@ public class MainActivity extends AppCompatActivity
                         activeMapFragment.getChildFragmentManager().
                                 findFragmentById(R.id.map);
                 mapFragment.getMapAsync(mcb);
-
             }
         });
     }
@@ -400,7 +398,7 @@ public class MainActivity extends AppCompatActivity
                 ft.detach(getSupportFragmentManager().findFragmentByTag("List"));
             }
             ft.attach(mapFrag);
-            ft.commit();
+            ft.commitNow();
 
         }
         if(fragName == "CourseList"){
