@@ -16,6 +16,7 @@ import java.util.List;
 
 import recrec.golfcourseviewer.Requests.Response.Course;
 import recrec.golfcourseviewer.Requests.Response.Hole;
+import recrec.golfcourseviewer.Requests.Response.PolygonElement;
 import recrec.golfcourseviewer.db.AppDatabase;
 
 public class CourseViewModel extends AndroidViewModel {
@@ -27,6 +28,7 @@ public class CourseViewModel extends AndroidViewModel {
 
     public MutableLiveData<Boolean> holeCallResponded = new MutableLiveData<>();
     public MutableLiveData<Boolean> courseCallResponded = new MutableLiveData<>();
+    public MutableLiveData<List<PolygonElement>> holesPolygons = new MutableLiveData<>();
 
     public AppDatabase db;
 

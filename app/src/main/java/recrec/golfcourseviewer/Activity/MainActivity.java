@@ -67,10 +67,7 @@ public class MainActivity extends AppCompatActivity
 
     private AppDatabase db;
 
-    private String responce;
     public CourseViewModel golfCourseListViewModel;
-    public ApiCallback callback = this;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +87,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void subscribe(){
+        //When Course is chosen
         golfCourseListViewModel.courseID.observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
@@ -97,6 +95,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        //When hole is chosen
         final OnMapReadyCallback mcb = this;
         golfCourseListViewModel.holeID.observe(this, new Observer<String>() {
             @Override
@@ -116,6 +115,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        //When Hole call is finished
         golfCourseListViewModel.holeCallResponded.observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
@@ -128,6 +128,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        //When course call is finished
         golfCourseListViewModel.courseCallResponded.observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
@@ -139,9 +140,16 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
-    }
 
-    HashMap<String, List<PolygonElement>> holeHash;
+        //When hole polygons are retrieved it is collected in the ArrayList
+        golfCourseListViewModel.holesPolygons.observe(this, new Observer<List<PolygonElement>>() {
+            @Override
+            public void onChanged(@Nullable List<PolygonElement> polygonElements) {
+                holeElements.addAll(polygonElements);
+            }
+        });
+    }
+    ArrayList<PolygonElement> holeElements = new ArrayList<>();
 //    private void buildHoles(){
 //        holeHash = new HashMap<>();
 //        ArrayList<Hole> holes = new ArrayList<>(golfCourseListViewModel.holes.getValue());
@@ -186,12 +194,14 @@ public class MainActivity extends AppCompatActivity
                 if(response.body() != null){
                     for(PolygonElement poly : response.body()){
                         try {
+                            golfCourseListViewModel.holesPolygons.setValue(response.body());
                             holeFromResponse(poly, course);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
                     golfCourseListViewModel.holeCallResponded.setValue(true);
+                    centerOnHole(golfCourseListViewModel.holeID.getValue());
                 }
 
             }
@@ -214,7 +224,6 @@ public class MainActivity extends AppCompatActivity
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
                 }
             }
 
@@ -385,16 +394,29 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void centerOnHole(String geoJsonString) throws JSONException {
+    private void centerOnHole(String holeId){
         if (map != null) {
-            JSONObject geoJsonObject = new JSONObject(geoJsonString);
-            JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0).getJSONArray(0);
-            double lat = coords.getDouble(1);
-            double lon = coords.getDouble(0);
-            LatLng coordsLL = new LatLng(lat, lon);
+            try{
+                List<PolygonElement> holes = golfCourseListViewModel.holesPolygons.getValue();
+                String holeGeoJson = "";
+                for(PolygonElement h : holes){
+                    if(h.getHoleId().equals(holeId)){
+                        holeGeoJson = h.getGeoJson();
+                        break;
+                    }
+                }
+                if(!holeGeoJson.equals("")){
+                    JSONObject geoJsonObject = new JSONObject(holeGeoJson);
+                    JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0).getJSONArray(0);
+                    double lat = coords.getDouble(1);
+                    double lon = coords.getDouble(0);
+                    LatLng coordsLL = new LatLng(lat, lon);
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordsLL, 17f));
+                }
 
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordsLL, 15f));
-
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
         }
     }
     /*--------------------------------------------------------------------------
