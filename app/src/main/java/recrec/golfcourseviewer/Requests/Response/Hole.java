@@ -1,6 +1,6 @@
 package recrec.golfcourseviewer.Requests.Response;
 
-public class Holes {
+public class Hole {
     public String getHoleId() {
         return holeId;
     }

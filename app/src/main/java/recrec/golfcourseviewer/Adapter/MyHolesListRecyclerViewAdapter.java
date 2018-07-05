@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
-import recrec.golfcourseviewer.Requests.Response.Holes;
+import recrec.golfcourseviewer.Requests.Response.Hole;
 
 import java.util.List;
 
@@ -19,14 +19,14 @@ import java.util.List;
  * TODO: Replace the implementation with code for your data type.
  */
 public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHolesListRecyclerViewAdapter.ViewHolder> {
-    private List<Holes> mValues;
+    private List<Hole> mValues;
     private CourseViewModel courseViewModel;
 
-    public MyHolesListRecyclerViewAdapter(List<Holes> items, CourseViewModel vm) {
+    public MyHolesListRecyclerViewAdapter(List<Hole> items, CourseViewModel vm) {
         mValues = items;
         courseViewModel = vm;
     }
-    public void setmValues(List<Holes> mValues) {
+    public void setmValues(List<Hole> mValues) {
         this.mValues = mValues;
     }
 
@@ -61,7 +61,7 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
-        public Holes mItem;
+        public Hole mItem;
 
         public ViewHolder(View view, final CourseViewModel vm) {
             super(view);

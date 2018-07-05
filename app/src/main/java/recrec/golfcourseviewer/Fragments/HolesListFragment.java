@@ -21,7 +21,7 @@ import recrec.golfcourseviewer.Adapter.MyHolesListRecyclerViewAdapter;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.ApiClientRF;
-import recrec.golfcourseviewer.Requests.Response.Holes;
+import recrec.golfcourseviewer.Requests.Response.Hole;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -68,7 +68,7 @@ public class HolesListFragment extends Fragment {
 
     MyHolesListRecyclerViewAdapter adapter;
     CourseViewModel courseViewModel;
-    List<Holes> holesList = new ArrayList<>();
+    List<Hole> holesList = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -78,18 +78,18 @@ public class HolesListFragment extends Fragment {
         subscribe();
 
         ApiClientRF clientRF = ServiceGenerator.getService();
-        Call<List<Holes>> call = clientRF.getHolesByCourseId(courseViewModel.courseID.getValue());
+        Call<List<Hole>> call = clientRF.getHolesByCourseId(courseViewModel.courseID.getValue());
 
-        call.enqueue(new Callback<List<Holes>>() {
+        call.enqueue(new Callback<List<Hole>>() {
             @Override
-            public void onResponse(Call<List<Holes>> call, Response<List<Holes>> response) {
+            public void onResponse(Call<List<Hole>> call, Response<List<Hole>> response) {
                 courseViewModel.holes.setValue(response.body());
-                Log.d("Holes", response.body().get(0).getName());
+                Log.d("Hole", response.body().get(0).getName());
             }
 
             @Override
-            public void onFailure(Call<List<Holes>> call, Throwable t) {
-                Log.d("Holes", "Failed: " + t.getMessage());
+            public void onFailure(Call<List<Hole>> call, Throwable t) {
+                Log.d("Hole", "Failed: " + t.getMessage());
             }
         });
 
@@ -109,9 +109,9 @@ public class HolesListFragment extends Fragment {
     }
 
     private void subscribe(){
-        courseViewModel.holes.observe(this, new Observer<List<Holes>>() {
+        courseViewModel.holes.observe(this, new Observer<List<Hole>>() {
             @Override
-            public void onChanged(@Nullable List<Holes> holes) {
+            public void onChanged(@Nullable List<Hole> holes) {
                 adapter.setmValues(holes);
                 adapter.notifyDataSetChanged();
             }
