@@ -141,6 +141,21 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        //point call is finished
+        golfCourseListViewModel.pointCallResponded.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                Boolean holeState = golfCourseListViewModel.pointCallResponded.getValue();
+                if(holeState != null){
+                    if( aBoolean && holeState){
+                        //hole.drawHole(getResources(), map);
+                            point.drawInfoPoint(getResources(), map);
+                    }
+                }
+            }
+        });
+
+
         //When hole polygons are retrieved it is collected in the ArrayList
         golfCourseListViewModel.holesPolygons.observe(this, new Observer<List<PolygonElement>>() {
             @Override
@@ -220,16 +235,19 @@ public class MainActivity extends AppCompatActivity
             public void onResponse(Call<List<Point>> call, @NonNull Response<List<Point>> response) {
                 for(Point poly : response.body()){
                     try {
+
                         pointFromResponse(poly, course);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
+                golfCourseListViewModel.pointCallResponded.setValue(true);
             }
 
             @Override
             public void onFailure(Call<List<Point>> call, Throwable t) {
                 Log.d("Point Call", "Fail: " + t.getMessage());
+                golfCourseListViewModel.pointCallResponded.setValue(false);
             }
         });
 
@@ -313,11 +331,6 @@ public class MainActivity extends AppCompatActivity
         // draw the hole
         if (hole != null) {
             mapReady = true;
-        }
-
-        //draw the point
-        if (point != null){
-            point.drawInfoPoint(getResources(), map);
         }
 
         //map.setOnInfoWindowClickListener(this);
