@@ -37,10 +37,11 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
         return new ViewHolder(view, courseViewModel);
     }
 
+    private int counter = 0;
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).getName());
+        holder.mIdView.setText(String.valueOf(++counter));
         holder.mContentView.setText(mValues.get(position).getName());
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -68,7 +69,7 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
             mIdView = (TextView) view.findViewById(R.id.item_number);
             mContentView = (TextView) view.findViewById(R.id.content);
 
-            mIdView.setOnClickListener(new View.OnClickListener() {
+            mContentView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     vm.holeID.setValue(mItem.getHoleId());

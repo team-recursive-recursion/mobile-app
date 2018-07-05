@@ -30,6 +30,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
+
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.Entity.ResponseViewModel;
 import recrec.golfcourseviewer.Fragments.GolfCourseListFragment;
@@ -41,8 +43,12 @@ import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.ApiCallback;
 import recrec.golfcourseviewer.Requests.ApiClientRF;
 import recrec.golfcourseviewer.Requests.ApiRequest;
+import recrec.golfcourseviewer.Requests.Response.PolygonElement;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import recrec.golfcourseviewer.db.AppDatabase;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ApiCallback {
@@ -77,6 +83,8 @@ public class MainActivity extends AppCompatActivity
         setFragment("Map");
 
         createDb();
+
+        hole = new GolfHole();
     }
 
     private void subscribe(){
@@ -87,14 +95,110 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        final OnMapReadyCallback mcb = this;
         golfCourseListViewModel.holeID.observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 setFragment("Map");
-                ApiClientRF client = ServiceGenerator.getService();
+                createCourse(hole);
+                // load the map
+                Map activeMapFragment = (Map) getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_container);
+                SupportMapFragment mapFragment = (SupportMapFragment)
+                        activeMapFragment.getChildFragmentManager().
+                                findFragmentById(R.id.map);
+                mapFragment.getMapAsync(mcb);
 
             }
         });
+    }
+
+    private void createCourse(final GolfHole course){
+        ApiClientRF client = ServiceGenerator.getService();
+        Call<List<PolygonElement>> callCourse = client
+                .getCourseElementsById(golfCourseListViewModel.courseID.getValue());
+
+        callCourse.enqueue(new Callback<List<PolygonElement>>() {
+            @Override
+            public void onResponse(Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
+                for(PolygonElement poly : response.body()){
+                    try {
+                        holeFromResponse(poly, course);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<PolygonElement>> call, Throwable t) {
+                Log.d("Course Call", "Fail: " + t.getMessage());
+            }
+        });
+
+        Call<List<PolygonElement>> callHole = client.getHoleElementsById(golfCourseListViewModel
+                .holeID.getValue());
+        callHole.enqueue(new Callback<List<PolygonElement>>() {
+            @Override
+            public void onResponse(Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
+                for(PolygonElement poly : response.body()){
+                    try {
+                        holeFromResponse(poly, course);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<PolygonElement>> call, Throwable t) {
+                Log.d("Hole Call", "Fail: " + t.getMessage());
+            }
+        });
+    }
+
+    private void holeFromResponse(PolygonElement resp, GolfHole hole) throws Exception {
+        if(hole == null){
+            hole = new GolfHole();
+        }
+        //Determine type
+        GolfPolygon.PolyType type;
+        switch (resp.getPolygonType()) {
+            case 0:
+                type = GolfPolygon.PolyType.TYPE_ROUGH;
+                break;
+            case 1:
+                type = GolfPolygon.PolyType.TYPE_FAIRWAY;
+                break;
+            case 2:
+                type = GolfPolygon.PolyType.TYPE_GREEN;
+                break;
+            case 3:
+                type = GolfPolygon.PolyType.TYPE_BUNKER;
+                break;
+            case 4:
+                type = GolfPolygon.PolyType.TYPE_WATER;
+                break;
+            default:
+                throw new Exception("The hole contains an invalid polygon type");
+        }
+
+        // create the polygon
+        GolfPolygon poly = new GolfPolygon(type);
+        String geoJson = resp.getGeoJson();
+        JSONObject geoJsonObject = new JSONObject(geoJson);
+
+        JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0);
+        for (int j = 0; j < coords.length(); ++j) {
+            JSONArray pair = coords.getJSONArray(j);
+            double lat = pair.getDouble(1);
+            double lon = pair.getDouble(0);
+            poly.addPoint(lat, lon);
+        }
+
+        hole.addPolygon(poly);
     }
 
     @Override
@@ -165,13 +269,7 @@ public class MainActivity extends AppCompatActivity
                         }
 
                     }
-                    // load the map
-                    Map activeMapFragment = (Map) getSupportFragmentManager()
-                            .findFragmentById(recrec.golfcourseviewer.R.id.fragment_container);
-                    SupportMapFragment mapFragment = (SupportMapFragment)
-                            activeMapFragment.getChildFragmentManager().
-                                    findFragmentById(recrec.golfcourseviewer.R.id.map);
-                    mapFragment.getMapAsync(mcb);
+
                 } else {
                     showError("Response unsuccessful: " + resp);
                 }
@@ -250,54 +348,6 @@ public class MainActivity extends AppCompatActivity
         builder.show();
     }
 
-    private GolfHole holeFromResponse(String resp) throws Exception {
-        GolfHole hole = new GolfHole();
-        JSONArray jObjects = new JSONObject(resp).getJSONArray("courseElements");
-        // load polygons and points from the response
-        for (int i = 0; i < jObjects.length(); ++i) {
-            // TODO extend to show points (such as flag, tee, etc.)
-            JSONObject jObj = jObjects.getJSONObject(i);
-
-            // determine the type
-            GolfPolygon.PolyType type;
-            switch (jObj.getInt("type")) {
-                case 0:
-                    type = GolfPolygon.PolyType.TYPE_ROUGH;
-                    break;
-                case 1:
-                    type = GolfPolygon.PolyType.TYPE_FAIRWAY;
-                    break;
-                case 2:
-                    type = GolfPolygon.PolyType.TYPE_GREEN;
-                    break;
-                case 3:
-                    type = GolfPolygon.PolyType.TYPE_BUNKER;
-                    break;
-                case 4:
-                    type = GolfPolygon.PolyType.TYPE_WATER;
-                    break;
-                default:
-                    throw new Exception("The hole contains an invalid polygon type");
-            }
-
-            // create the polygon
-            GolfPolygon poly = new GolfPolygon(type);
-            String geoJson = jObj.getString("geoJson");
-            JSONObject geoJsonObject = new JSONObject(geoJson);
-
-            JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0);
-            for (int j = 0; j < coords.length(); ++j) {
-                JSONArray pair = coords.getJSONArray(j);
-                double lat = pair.getDouble(1);
-                double lon = pair.getDouble(0);
-                poly.addPoint(lat, lon);
-            }
-
-            hole.addPolygon(poly);
-        }
-        return hole;
-    }
-
     private void showError(String title, String msg) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title)
@@ -343,6 +393,9 @@ public class MainActivity extends AppCompatActivity
                 ft.add(recrec.golfcourseviewer.R.id.fragment_container, mapFrag,
                         "Map");
             }
+            if(holesListFragment != null){
+                ft.detach(getSupportFragmentManager().findFragmentByTag("Holes"));
+            }
             if(courseListFrag != null){
                 ft.detach(getSupportFragmentManager().findFragmentByTag("List"));
             }
@@ -366,7 +419,7 @@ public class MainActivity extends AppCompatActivity
                 holesListFragment = new HolesListFragment();
                 ft.add(R.id.fragment_container, holesListFragment, "Holes");
             }
-            if(mapFrag != null){
+            if(courseListFrag != null){
                 ft.detach(getSupportFragmentManager().findFragmentByTag("List"));
             }
             ft.attach(holesListFragment);
