@@ -7,6 +7,7 @@ public class Point {
     private String holeId;
     private String courseId;
     private String info;
+    private int pointType;
 
     public String getGeoJson() {
         return geoJson;
@@ -20,5 +21,10 @@ public class Point {
         return courseId;
     }
 
-    public String getInfo() {return info;}
+    public String getInfo() {return info; }
+
+    public int getPointType() {
+        return pointType;
+    }
+
 }

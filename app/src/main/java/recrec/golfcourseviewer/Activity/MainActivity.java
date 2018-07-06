@@ -36,6 +36,7 @@ import java.util.List;
 
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.Entity.GolfInfoPoint;
+import recrec.golfcourseviewer.Entity.GolfPoint;
 import recrec.golfcourseviewer.Fragments.GolfCourseListFragment;
 import recrec.golfcourseviewer.Fragments.HolesListFragment;
 import recrec.golfcourseviewer.Fragments.Map;
@@ -257,16 +258,30 @@ public class MainActivity extends AppCompatActivity
         if (point == null){
             point = new GolfInfoPoint();
         }
+
         String geoJson = resp.getGeoJson();
         JSONObject geoJsonObject = new JSONObject(geoJson);
 
         JSONArray coords = geoJsonObject.getJSONArray("coordinates");
+
+
         double val1 = coords.getDouble(0);
         double val2 = coords.getDouble(1);
 
-        point.setLat(val1);
-        point.setLon(val2);
-        point.setInfo(resp.getInfo());
+        GolfPoint newPoint = new GolfPoint(val1,val2);
+        newPoint.setInfo(resp.getInfo());
+
+        switch(resp.getPointType()){
+            case 0: newPoint.setType("Pin");
+            break;
+            case 1: newPoint.setType("Hole");
+            break;
+            case 2: newPoint.setType("Tee");
+            break;
+        }
+
+        point.addPoint(newPoint);
+
 
     }
 
