@@ -2,7 +2,6 @@ package recrec.golfcourseviewer.Activity;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
@@ -30,16 +29,31 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import recrec.golfcourseviewer.Entity.ResponseViewModel;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
+import recrec.golfcourseviewer.Entity.CourseViewModel;
+import recrec.golfcourseviewer.Entity.GolfInfoPoint;
+import recrec.golfcourseviewer.Entity.GolfPoint;
 import recrec.golfcourseviewer.Fragments.GolfCourseListFragment;
+import recrec.golfcourseviewer.Fragments.HolesListFragment;
 import recrec.golfcourseviewer.Fragments.Map;
 import recrec.golfcourseviewer.Entity.GolfHole;
 import recrec.golfcourseviewer.Entity.GolfPolygon;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.ApiCallback;
+import recrec.golfcourseviewer.Requests.ApiClientRF;
 import recrec.golfcourseviewer.Requests.ApiRequest;
+import recrec.golfcourseviewer.Requests.Response.Hole;
+import recrec.golfcourseviewer.Requests.Response.Point;
+import recrec.golfcourseviewer.Requests.Response.PolygonElement;
+import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import recrec.golfcourseviewer.db.AppDatabase;
-import recrec.golfcourseviewer.db.Models.GolfCourseModel;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback, ApiCallback {
@@ -49,21 +63,19 @@ public class MainActivity extends AppCompatActivity
     private GoogleMap map;
     private ApiRequest api;
     private GolfHole hole;
+    private GolfInfoPoint point;
 
-    private GolfCourseListFragment courseListFrag;
-    private Map mapFrag;
+
     private AppDatabase db;
 
-    private String responce;
-    public ResponseViewModel responseViewModel;
-
+    public CourseViewModel golfCourseListViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(recrec.golfcourseviewer.R.layout.activity_main);
 
-        responseViewModel = ViewModelProviders.of(this).get(ResponseViewModel.class);
+        golfCourseListViewModel = ViewModelProviders.of(this).get(CourseViewModel.class);
         subscribe();
         // ask the user for a URL
         showInputDialog();
@@ -71,21 +83,251 @@ public class MainActivity extends AppCompatActivity
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         setFragment("Map");
 
-        createDb();
+        hole = new GolfHole();
+        point = new GolfInfoPoint();
     }
 
     private void subscribe(){
-        responseViewModel.courseNamesAndIdJSON.observe(this, new Observer<String>() {
+        //When Course is chosen
+        golfCourseListViewModel.courseID.observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
-                try {
-                    populateDbFromResponse(s);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                setFragment("HolesList");
+            }
+        });
+
+        //When hole is chosen
+        final OnMapReadyCallback mcb = this;
+        golfCourseListViewModel.holeID.observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String s) {
+//                buildHoles();
+                createCourse(hole);
+                setFragment("Map");
+                // load the map
+                Map activeMapFragment = (Map) getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_container);
+                SupportMapFragment mapFragment = (SupportMapFragment)
+                        activeMapFragment.getChildFragmentManager().
+                                findFragmentById(R.id.map);
+                mapFragment.getMapAsync(mcb);
+
+
+            }
+        });
+
+        //When Hole call is finished
+        golfCourseListViewModel.holeCallResponded.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                Boolean courseState = golfCourseListViewModel.courseCallResponded.getValue();
+                if( courseState != null){
+                    if( aBoolean && courseState){
+                        hole.drawHole(getResources(), map);
+                    }
                 }
             }
         });
+
+        //When course call is finished
+        golfCourseListViewModel.courseCallResponded.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                Boolean holeState = golfCourseListViewModel.holeCallResponded.getValue();
+                if(holeState != null){
+                    if( aBoolean && holeState){
+                        hole.drawHole(getResources(), map);
+                    }
+                }
+            }
+        });
+
+        //point call is finished
+        golfCourseListViewModel.pointCallResponded.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                Boolean holeState = golfCourseListViewModel.pointCallResponded.getValue();
+                if(holeState != null){
+                    if( aBoolean && holeState){
+                        //hole.drawHole(getResources(), map);
+                            point.drawInfoPoint(getResources(), map);
+                    }
+                }
+            }
+        });
+
+
+        //When hole polygons are retrieved it is collected in the ArrayList
+        golfCourseListViewModel.holesPolygons.observe(this, new Observer<List<PolygonElement>>() {
+            @Override
+            public void onChanged(@Nullable List<PolygonElement> polygonElements) {
+                holeElements.addAll(polygonElements);
+            }
+        });
     }
+    ArrayList<PolygonElement> holeElements = new ArrayList<>();
+//    private void buildHoles(){
+//        holeHash = new HashMap<>();
+//        ArrayList<Hole> holes = new ArrayList<>(golfCourseListViewModel.holes.getValue());
+//        ApiClientRF client = ServiceGenerator.getService();
+//
+//        for(final Hole c : holes){
+//
+//        }
+//    }
+
+    private void createCourse(final GolfHole course){
+        ApiClientRF client = ServiceGenerator.getService();
+        Call<List<PolygonElement>> callCourse = client
+                .getCourseElementsById(golfCourseListViewModel.courseID.getValue());
+
+        callCourse.enqueue(new Callback<List<PolygonElement>>() {
+            @Override
+            public void onResponse(Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
+                if(response.body() != null){
+                    for(PolygonElement poly : response.body()){
+                        try {
+                            holeFromResponse(poly, course);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                golfCourseListViewModel.courseCallResponded.setValue(true);
+            }
+
+            @Override
+            public void onFailure(Call<List<PolygonElement>> call, Throwable t) {
+                Log.d("Course Call", "Fail: " + t.getMessage());
+                golfCourseListViewModel.courseCallResponded.setValue(false);
+            }
+        });
+
+        Call<List<PolygonElement>> callHole = client.getHoleElementsById(golfCourseListViewModel.holeID.getValue());
+        callHole.enqueue(new Callback<List<PolygonElement>>() {
+            @Override
+            public void onResponse(Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
+                if(response.body() != null){
+                    for(PolygonElement poly : response.body()){
+                        try {
+                            golfCourseListViewModel.holesPolygons.setValue(response.body());
+                            holeFromResponse(poly, course);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    golfCourseListViewModel.holeCallResponded.setValue(true);
+                    centerOnHole(golfCourseListViewModel.holeID.getValue());
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<List<PolygonElement>> call, Throwable t) {
+                Log.d("Hole Call", "Fail: " + t.getMessage());
+                golfCourseListViewModel.holeCallResponded.setValue(false);
+            }
+        });
+
+        Call<List<Point>> callPoint = client.getPointElementsById(golfCourseListViewModel
+                .holeID.getValue());
+        callPoint.enqueue(new Callback<List<Point>>() {
+            @Override
+            public void onResponse(Call<List<Point>> call, @NonNull Response<List<Point>> response) {
+                for(Point poly : response.body()){
+                    try {
+
+                        pointFromResponse(poly, course);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                golfCourseListViewModel.pointCallResponded.setValue(true);
+            }
+
+            @Override
+            public void onFailure(Call<List<Point>> call, Throwable t) {
+                Log.d("Point Call", "Fail: " + t.getMessage());
+                golfCourseListViewModel.pointCallResponded.setValue(false);
+            }
+        });
+
+    }
+
+    private void pointFromResponse(Point resp, GolfHole hole) throws Exception {
+        if (point == null){
+            point = new GolfInfoPoint();
+        }
+
+        String geoJson = resp.getGeoJson();
+        JSONObject geoJsonObject = new JSONObject(geoJson);
+
+        JSONArray coords = geoJsonObject.getJSONArray("coordinates");
+
+
+        double val1 = coords.getDouble(0);
+        double val2 = coords.getDouble(1);
+
+        GolfPoint newPoint = new GolfPoint(val1,val2);
+        newPoint.setInfo(resp.getInfo());
+
+        switch(resp.getPointType()){
+            case 0: newPoint.setType("Pin");
+            break;
+            case 1: newPoint.setType("Hole");
+            break;
+            case 2: newPoint.setType("Tee");
+            break;
+        }
+
+        point.addPoint(newPoint);
+
+
+    }
+
+    private void holeFromResponse(PolygonElement resp, GolfHole hole) throws Exception {
+        if(hole == null){
+            hole = new GolfHole();
+        }
+        //Determine type
+        GolfPolygon.PolyType type;
+        switch (resp.getPolygonType()) {
+            case 0:
+                type = GolfPolygon.PolyType.TYPE_ROUGH;
+                break;
+            case 1:
+                type = GolfPolygon.PolyType.TYPE_FAIRWAY;
+                break;
+            case 2:
+                type = GolfPolygon.PolyType.TYPE_GREEN;
+                break;
+            case 3:
+                type = GolfPolygon.PolyType.TYPE_BUNKER;
+                break;
+            case 4:
+                type = GolfPolygon.PolyType.TYPE_WATER;
+                break;
+            default:
+                throw new Exception("The hole contains an invalid polygon type");
+        }
+
+        // create the polygon
+        GolfPolygon poly = new GolfPolygon(type);
+        String geoJson = resp.getGeoJson();
+        JSONObject geoJsonObject = new JSONObject(geoJson);
+
+        JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0);
+        for (int j = 0; j < coords.length(); ++j) {
+            JSONArray pair = coords.getJSONArray(j);
+            double lat = pair.getDouble(1);
+            double lon = pair.getDouble(0);
+            poly.addPoint(lat, lon);
+        }
+
+        hole.addPolygon(poly);
+    }
+
+    boolean mapReady = false;
 
     @Override
     public void onMapReady(GoogleMap map) {
@@ -99,17 +341,14 @@ public class MainActivity extends AppCompatActivity
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST);
         } else {
             map.setMyLocationEnabled(true);
-//            centerOnPlayer();
-        }
-        try {
-            centerOnCourse(responce);
-        } catch (JSONException e) {
-            e.printStackTrace();
+            centerOnPlayer();
         }
         // draw the hole
         if (hole != null) {
-            hole.drawHole(getResources(), map);
+            mapReady = true;
         }
+
+        //map.setOnInfoWindowClickListener(this);
     }
 
     @Override
@@ -141,56 +380,25 @@ public class MainActivity extends AppCompatActivity
                 if (res == ApiRequest.RequestResult.RES_SUCCESS) {
 
                     if (type == ApiRequest.RequestType.REQ_GET_COURSES) {
-                        responseViewModel.courseNamesAndIdJSON.setValue(resp);
 
                     } else if (type == ApiRequest.RequestType.REQ_GET_POLYGONS) {
                         // create the hole
                         try {
-
-                            responce = resp;
-                            hole = holeFromResponse(resp);
+//                            hole = holeFromResponse(resp);
                         } catch (Exception e) {
                             // TODO improve errors and ask for another course
                             hole = null;
                             showError(e.getMessage());
                         }
-                        // load the map
-                        Map activeMapFragment = (Map) getSupportFragmentManager()
-                                .findFragmentById(recrec.golfcourseviewer.R.id.fragment_container);
-                        SupportMapFragment mapFragment = (SupportMapFragment)
-                                activeMapFragment.getChildFragmentManager().
-                                        findFragmentById(recrec.golfcourseviewer.R.id.map);
-                        mapFragment.getMapAsync(mcb);
 
                     }
+
                 } else {
                     showError("Response unsuccessful: " + resp);
                 }
-            }
-        });
-
-//        if (type == ApiRequest.RequestType.REQ_GET_POLYGONS){
-//        }
-
-    }
-
-    public void getPolygonsFromAdapter(final String courseId, final MainActivity mainActivity){
-        Log.d("DO NOT DO THIS IN R L", courseId);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                api.getPolygonsAsync(mainActivity, courseId);
 
             }
         });
-
-        setFragment("Map");
-    }
-
-    private void onServerSet(String url) {
-        // attempt to fetch courses from the server
-        api = new ApiRequest(this, url);
-        api.getCoursesAsync(this);
     }
 
     private void centerOnPlayer() throws SecurityException {
@@ -214,18 +422,29 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void centerOnCourse(String resp) throws JSONException {
+    private void centerOnHole(String holeId){
         if (map != null) {
-            JSONArray courseElements = new JSONObject(resp).getJSONArray("courseElements");
-            String geoJson = courseElements.getJSONObject(0).getString("geoJson");
-            JSONObject geoJsonObject = new JSONObject(geoJson);
-            JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0).getJSONArray(0);
-            double lat = coords.getDouble(1);
-            double lon = coords.getDouble(0);
-            LatLng coordsLL = new LatLng(lat, lon);
+            try{
+                List<PolygonElement> holes = golfCourseListViewModel.holesPolygons.getValue();
+                String holeGeoJson = "";
+                for(PolygonElement h : holes){
+                    if(h.getHoleId().equals(holeId)){
+                        holeGeoJson = h.getGeoJson();
+                        break;
+                    }
+                }
+                if(!holeGeoJson.equals("")){
+                    JSONObject geoJsonObject = new JSONObject(holeGeoJson);
+                    JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0).getJSONArray(0);
+                    double lat = coords.getDouble(1);
+                    double lon = coords.getDouble(0);
+                    LatLng coordsLL = new LatLng(lat, lon);
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordsLL, 17f));
+                }
 
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordsLL, 15f));
-
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
         }
     }
     /*--------------------------------------------------------------------------
@@ -247,59 +466,14 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                onServerSet(input.getText().toString());
+//                onServerSet(input.getText().toString());
+                String baseUrl = "http://"+input.getText().toString() + ":5001/";
+                ServiceGenerator.setBaseUrl(baseUrl );
+
             }
         });
 
         builder.show();
-    }
-
-    private GolfHole holeFromResponse(String resp) throws Exception {
-        GolfHole hole = new GolfHole();
-        JSONArray jObjects = new JSONObject(resp).getJSONArray("courseElements");
-        // load polygons and points from the response
-        for (int i = 0; i < jObjects.length(); ++i) {
-            // TODO extend to show points (such as flag, tee, etc.)
-            JSONObject jObj = jObjects.getJSONObject(i);
-
-            // determine the type
-            GolfPolygon.PolyType type;
-            switch (jObj.getInt("type")) {
-                case 0:
-                    type = GolfPolygon.PolyType.TYPE_ROUGH;
-                    break;
-                case 1:
-                    type = GolfPolygon.PolyType.TYPE_FAIRWAY;
-                    break;
-                case 2:
-                    type = GolfPolygon.PolyType.TYPE_GREEN;
-                    break;
-                case 3:
-                    type = GolfPolygon.PolyType.TYPE_BUNKER;
-                    break;
-                case 4:
-                    type = GolfPolygon.PolyType.TYPE_WATER;
-                    break;
-                default:
-                    throw new Exception("The hole contains an invalid polygon type");
-            }
-
-            // create the polygon
-            GolfPolygon poly = new GolfPolygon(type);
-            String geoJson = jObj.getString("geoJson");
-            JSONObject geoJsonObject = new JSONObject(geoJson);
-
-            JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0);
-            for (int j = 0; j < coords.length(); ++j) {
-                JSONArray pair = coords.getJSONArray(j);
-                double lat = pair.getDouble(1);
-                double lon = pair.getDouble(0);
-                poly.addPoint(lat, lon);
-            }
-
-            hole.addPolygon(poly);
-        }
-        return hole;
     }
 
     private void showError(String title, String msg) {
@@ -323,7 +497,7 @@ public class MainActivity extends AppCompatActivity
             switch (item.getItemId()) {
                 case recrec.golfcourseviewer.R.id.navigation_list:
                     Log.d("ITEM", "List");
-                    setFragment("GolfCourseListFragment");
+                    setFragment("CourseList");
                     return true;
                 case recrec.golfcourseviewer.R.id.navigation_map:
                     Log.d("ITEM","MAP");
@@ -335,6 +509,9 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    private GolfCourseListFragment courseListFrag;
+    private Map mapFrag;
+    private HolesListFragment holesListFragment;
 
     public void setFragment(String fragName){
         android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -344,24 +521,36 @@ public class MainActivity extends AppCompatActivity
                 ft.add(recrec.golfcourseviewer.R.id.fragment_container, mapFrag,
                         "Map");
             }
+            if(holesListFragment != null){
+                ft.detach(getSupportFragmentManager().findFragmentByTag("Hole"));
+            }
             if(courseListFrag != null){
                 ft.detach(getSupportFragmentManager().findFragmentByTag("List"));
             }
             ft.attach(mapFrag);
-            ft.commit();
+            ft.commitNow();
 
         }
-        if(fragName == "GolfCourseListFragment"){
+        if(fragName == "CourseList"){
             if(courseListFrag == null){
                 courseListFrag = new GolfCourseListFragment();
-                //fixme: Fix this
-                courseListFrag.mainActivity = this;
                 ft.add(R.id.fragment_container,courseListFrag,"List");
             }
             if(mapFrag != null){
                 ft.detach(getSupportFragmentManager().findFragmentByTag("Map"));
             }
             ft.attach(courseListFrag);
+            ft.commit();
+        }
+        if(fragName == "HolesList"){
+            if(holesListFragment == null){
+                holesListFragment = new HolesListFragment();
+                ft.add(R.id.fragment_container, holesListFragment, "Hole");
+            }
+            if(courseListFrag != null){
+                ft.detach(getSupportFragmentManager().findFragmentByTag("List"));
+            }
+            ft.attach(holesListFragment);
             ft.commit();
         }
     }
@@ -374,15 +563,15 @@ public class MainActivity extends AppCompatActivity
 *
 *       Takes a Jason string from response and populate a Room Database
 * ++++++++++++++++++++++++++++++++++++++++++++++*/
-    private void populateDbFromResponse(String resp) throws Exception{
-        JSONArray courses = new JSONArray(resp);
-        for(int i = 0; i< courses.length(); i++){
-            JSONObject jcourse = courses.getJSONObject(i);
-            GolfCourseModel gcm = new GolfCourseModel();
-            gcm.CourseName = jcourse.getString("courseName");
-            gcm.CourseId = jcourse.getString("courseId");
-            db.golfCourseModel().insertGolfCourse(gcm);
-        }
-    }
+//    private void populateDbFromResponse(String resp) throws Exception{
+//        JSONArray courses = new JSONArray(resp);
+//        for(int i = 0; i< courses.length(); i++){
+//            JSONObject jcourse = courses.getJSONObject(i);
+//            GolfCourseModel gcm = new GolfCourseModel();
+//            gcm.CourseName = jcourse.getString("courseName");
+//            gcm.CourseId = jcourse.getString("courseId");
+//            db.golfCourseModel().insertGolfCourse(gcm);
+//        }
+//    }
 
 }

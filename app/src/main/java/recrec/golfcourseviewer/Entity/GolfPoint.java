@@ -4,6 +4,8 @@ public class GolfPoint {
 
     public double lat;
     public double lon;
+    String info;
+    String type;
 
     public GolfPoint(double lat, double lon) {
         this.lat = lat;
@@ -18,6 +20,10 @@ public class GolfPoint {
         return lon;
     }
 
+    public String getInfo(){return info;}
+
+    public String getType(){return type;}
+
     public void setLatitude(double lat) {
         this.lat = lat;
     }
@@ -25,5 +31,9 @@ public class GolfPoint {
     public void setLongitude(double lon) {
         this.lon = lon;
     }
+
+    public void setInfo(String s){this.info = s;}
+
+    public void setType(String s){this.type = s;}
 
 }

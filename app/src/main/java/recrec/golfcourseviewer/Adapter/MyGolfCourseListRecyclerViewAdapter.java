@@ -8,23 +8,24 @@
 package recrec.golfcourseviewer.Adapter;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import recrec.golfcourseviewer.Activity.MainActivity;
+import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
-import recrec.golfcourseviewer.db.Models.GolfCourseModel;
+import recrec.golfcourseviewer.Requests.Response.Course;
 
 import java.util.List;
 public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<MyGolfCourseListRecyclerViewAdapter.ViewHolder> {
 
-    public List<GolfCourseModel> mValues;
-    private MainActivity mainActivity;
+    public List<Course> mValues;
+    private CourseViewModel courseVM;
 
-    public MyGolfCourseListRecyclerViewAdapter(List<GolfCourseModel> items, MainActivity mainActivity) {
-        this.mainActivity = mainActivity;
+    public MyGolfCourseListRecyclerViewAdapter(List<Course> items, CourseViewModel courseListViewModel) {
+        courseVM = courseListViewModel;
         mValues = items;
     }
 
@@ -32,14 +33,14 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.fragment_golfcourselist, parent, false);
-        return new ViewHolder(view, mainActivity);
+        return new ViewHolder(view, courseVM);
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
 
-        holder.mItem = mValues.get(position).CourseName;
-        holder.mContentView.setText(mValues.get(position).CourseName);
+        holder.mItem = mValues.get(position).getCourseName();
+        holder.mContentView.setText(mValues.get(position).getCourseName());
 
     }
 
@@ -53,7 +54,7 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
         public final TextView mContentView;
         public String mItem;
 
-        public ViewHolder(View view, final MainActivity mainActivity) {
+        public ViewHolder(View view, final CourseViewModel c) {
             super(view);
             mView = view;
             mContentView = (TextView) view.findViewById(R.id.course_name);
@@ -61,8 +62,9 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String courseID = mValues.get(getAdapterPosition()).CourseId;
-                    mainActivity.getPolygonsFromAdapter(courseID, mainActivity);
+                    String courseID = mValues.get(getAdapterPosition()).getCourseId();
+                    c.courseID.setValue(courseID);
+                    Log.d("Course clicked Id: ", courseID);
                 }
             });
         }
