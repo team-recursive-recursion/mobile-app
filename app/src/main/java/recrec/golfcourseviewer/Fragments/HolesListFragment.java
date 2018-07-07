@@ -1,9 +1,3 @@
-/*
- * Filename: GolfCourseListFragment.java
- * Author: Team Recursive Recursion
- * Class: GolfCourseListFragment
- *       Displays a list of al the golf courses.
- * */
 package recrec.golfcourseviewer.Fragments;
 
 import android.arch.lifecycle.Observer;
@@ -23,29 +17,40 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import recrec.golfcourseviewer.Activity.MainActivity;
-import recrec.golfcourseviewer.Adapter.MyGolfCourseListRecyclerViewAdapter;
+import recrec.golfcourseviewer.Adapter.MyHolesListRecyclerViewAdapter;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.ApiClientRF;
-import recrec.golfcourseviewer.Requests.Response.Course;
+import recrec.golfcourseviewer.Requests.Response.Hole;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class GolfCourseListFragment extends Fragment {
+/**
+ * A fragment representing a list of Items.
+ * <p/>
+ * Activities containing this fragment MUST implement the
+ * interface.
+ */
+public class HolesListFragment extends Fragment {
 
+    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
+    // TODO: Customize parameters
     private int mColumnCount = 1;
-    public MainActivity mainActivity;
 
-    public GolfCourseListFragment() {
+    /**
+     * Mandatory empty constructor for the fragment manager to instantiate the
+     * fragment (e.g. upon screen orientation changes).
+     */
+    public HolesListFragment() {
     }
 
+    // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static GolfCourseListFragment newInstance(int columnCount) {
-        GolfCourseListFragment fragment = new GolfCourseListFragment();
+    public static HolesListFragment newInstance(int columnCount) {
+        HolesListFragment fragment = new HolesListFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
@@ -61,30 +66,30 @@ public class GolfCourseListFragment extends Fragment {
         }
     }
 
-    MyGolfCourseListRecyclerViewAdapter adapter;
+    MyHolesListRecyclerViewAdapter adapter;
     CourseViewModel courseViewModel;
-    ArrayList<Course> courseModels = new ArrayList<>();
+    List<Hole> holesList = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_golfcourselist_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_holeslist_list, container, false);
         courseViewModel = ViewModelProviders.of(getActivity()).get(CourseViewModel.class);
+        subscribe();
 
-        ApiClientRF client  = ServiceGenerator.getService();
-        Call<List<Course>> call = client.getCourses();
-        subscribeAdapter();
+        ApiClientRF clientRF = ServiceGenerator.getService();
+        Call<List<Hole>> call = clientRF.getHolesByCourseId(courseViewModel.courseID.getValue());
 
-        call.enqueue(new Callback<List<Course>>() {
+        call.enqueue(new Callback<List<Hole>>() {
             @Override
-            public void onResponse(Call<List<Course>> call, Response<List<Course>> response) {
-                Log.d("Hey", response.body().get(0).getCourseName());
-                courseViewModel.courses.setValue(response.body());
+            public void onResponse(Call<List<Hole>> call, Response<List<Hole>> response) {
+                courseViewModel.holes.setValue(response.body());
+                Log.d("Hole", response.body().get(0).getName());
             }
 
             @Override
-            public void onFailure(Call<List<Course>> call, Throwable t) {
-                Log.d("Hey","Call to getCourse failed: " + t.getMessage());
+            public void onFailure(Call<List<Hole>> call, Throwable t) {
+                Log.d("Hole", "Failed: " + t.getMessage());
             }
         });
 
@@ -97,18 +102,17 @@ public class GolfCourseListFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            adapter = new MyGolfCourseListRecyclerViewAdapter(courseModels,courseViewModel);
+            adapter = new MyHolesListRecyclerViewAdapter(holesList,courseViewModel);
             recyclerView.setAdapter(adapter);
         }
         return view;
     }
 
-    private void subscribeAdapter(){
-        courseViewModel.courses.observe(this, new Observer<List<Course>>() {
+    private void subscribe(){
+        courseViewModel.holes.observe(this, new Observer<List<Hole>>() {
             @Override
-            public void onChanged(@Nullable List<Course> courses) {
-                Log.d("Hey",courses.get(0).getCourseId());
-                adapter.mValues =  courses;
+            public void onChanged(@Nullable List<Hole> holes) {
+                adapter.setmValues(holes);
                 adapter.notifyDataSetChanged();
             }
         });
