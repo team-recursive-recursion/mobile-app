@@ -29,7 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import recrec.golfcourseviewer.Entity.CourseViewModel;
@@ -59,7 +58,6 @@ public class MainActivity extends AppCompatActivity
     private GolfHole hole;
     private GolfInfoPoint point;
 
-
     private AppDatabase db;
 
     public CourseViewModel golfCourseListViewModel;
@@ -77,11 +75,13 @@ public class MainActivity extends AppCompatActivity
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         setFragment("Map");
 
+
         hole = new GolfHole();
         point = new GolfInfoPoint();
     }
 
-    private void subscribe(){
+    private void subscribe()
+    {
         //When Course is chosen
         golfCourseListViewModel.courseID.observe(this, new Observer<String>() {
             @Override
@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         //When hole is chosen
+
         final OnMapReadyCallback mcb = this;
         golfCourseListViewModel.holeID.observe(this, new Observer<String>() {
             @Override
@@ -98,14 +99,13 @@ public class MainActivity extends AppCompatActivity
 //                buildHoles();
                 createCourse(hole);
                 setFragment("Map");
-                // load the map
+                // Get Map ready
                 Map activeMapFragment = (Map) getSupportFragmentManager()
                         .findFragmentById(R.id.fragment_container);
                 SupportMapFragment mapFragment = (SupportMapFragment)
                         activeMapFragment.getChildFragmentManager().
                                 findFragmentById(R.id.map);
                 mapFragment.getMapAsync(mcb);
-
 
             }
         });
@@ -143,8 +143,7 @@ public class MainActivity extends AppCompatActivity
                 Boolean holeState = golfCourseListViewModel.pointCallResponded.getValue();
                 if(holeState != null){
                     if( aBoolean && holeState){
-                        //hole.drawHole(getResources(), map);
-                            point.drawInfoPoint(getResources(), map);
+                        point.drawInfoPoint(getResources(), map);
                     }
                 }
             }
@@ -155,11 +154,11 @@ public class MainActivity extends AppCompatActivity
         golfCourseListViewModel.holesPolygons.observe(this, new Observer<List<PolygonElement>>() {
             @Override
             public void onChanged(@Nullable List<PolygonElement> polygonElements) {
-                holeElements.addAll(polygonElements);
+//                holeElements.addAll(polygonElements);
             }
         });
     }
-    ArrayList<PolygonElement> holeElements = new ArrayList<>();
+//    ArrayList<PolygonElement> holeElements = new ArrayList<>();
 //    private void buildHoles(){
 //        holeHash = new HashMap<>();
 //        ArrayList<Hole> holes = new ArrayList<>(golfCourseListViewModel.holes.getValue());
@@ -170,7 +169,9 @@ public class MainActivity extends AppCompatActivity
 //        }
 //    }
 
-    private void createCourse(final GolfHole course){
+
+    private void createCourse(final GolfHole course)
+    {
         ApiClientRF client = ServiceGenerator.getService();
         Call<List<PolygonElement>> callCourse = client
                 .getCourseElementsById(golfCourseListViewModel.courseID.getValue());
@@ -202,6 +203,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onResponse(Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
                 if(response.body() != null){
+                    course.resetHolePolygons();
                     for(PolygonElement poly : response.body()){
                         try {
                             golfCourseListViewModel.holesPolygons.setValue(response.body());
@@ -228,6 +230,7 @@ public class MainActivity extends AppCompatActivity
         callPoint.enqueue(new Callback<List<Point>>() {
             @Override
             public void onResponse(Call<List<Point>> call, @NonNull Response<List<Point>> response) {
+                point.resetMultiPoints();
                 for(Point poly : response.body()){
                     try {
 
@@ -279,7 +282,8 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private void holeFromResponse(PolygonElement resp, GolfHole hole) throws Exception {
+    private void holeFromResponse(PolygonElement resp, GolfHole hole) throws Exception
+    {
         if(hole == null){
             hole = new GolfHole();
         }
@@ -317,8 +321,13 @@ public class MainActivity extends AppCompatActivity
             double lon = pair.getDouble(0);
             poly.addPoint(lat, lon);
         }
+        String id = resp.getHoleId();
+        if(id == null){
+            hole.addCoursePolygon(poly);
+        }else{
+            hole.addHolePolygon(poly);
+        }
 
-        hole.addPolygon(poly);
     }
 
     boolean mapReady = false;
@@ -335,12 +344,10 @@ public class MainActivity extends AppCompatActivity
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST);
         } else {
             map.setMyLocationEnabled(true);
-            centerOnPlayer();
+//            centerOnPlayer();
         }
         // draw the hole
-        if (hole != null) {
-            mapReady = true;
-        }
+        mapReady = true;
 
         //map.setOnInfoWindowClickListener(this);
     }
@@ -353,7 +360,6 @@ public class MainActivity extends AppCompatActivity
                     PackageManager.PERMISSION_GRANTED) {
                 try {
                     map.setMyLocationEnabled(true);
-//                    centerOnPlayer();
                 } catch (SecurityException e) {
                     // this exception shouldn't be able to happen here
                 }
@@ -473,6 +479,7 @@ public class MainActivity extends AppCompatActivity
     private GolfCourseListFragment courseListFrag;
     private Map mapFrag;
     private HolesListFragment holesListFragment;
+    String prevFrag = "";
 
     public void setFragment(String fragName){
         android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -482,8 +489,9 @@ public class MainActivity extends AppCompatActivity
                 ft.add(recrec.golfcourseviewer.R.id.fragment_container, mapFrag,
                         "Map");
             }
-            if(holesListFragment != null){
+            if(prevFrag.equals("HolesList")){
                 ft.detach(getSupportFragmentManager().findFragmentByTag("Hole"));
+//                ft.addToBackStack(null);
             }
             if(courseListFrag != null){
                 ft.detach(getSupportFragmentManager().findFragmentByTag("List"));
@@ -514,6 +522,7 @@ public class MainActivity extends AppCompatActivity
             ft.attach(holesListFragment);
             ft.commit();
         }
+        prevFrag = fragName;
     }
     private void createDb() {
         db = AppDatabase.getInMemoryDatabase(getApplication());

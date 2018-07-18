@@ -3,6 +3,7 @@ package recrec.golfcourseviewer.Entity;
 import android.content.res.Resources;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.LinkedList;
@@ -16,10 +17,17 @@ public class GolfInfoPoint {
     private String info;
     private double lat;
     private double lon;
+
+    public void resetMultiPoints() {
+        this.multiPoints = new LinkedList<>();
+    }
+
     private LinkedList<GolfPoint> multiPoints;
+    private LinkedList<Marker> markerList;
 
     public GolfInfoPoint(){
         multiPoints = new LinkedList<>();
+        markerList = new LinkedList<>();
     }
 
     public void setLat(double llat){
@@ -39,6 +47,9 @@ public class GolfInfoPoint {
     }
 
     public void drawInfoPoint(Resources res, GoogleMap map) {
+        for(Marker marker : markerList){
+            marker.remove();
+        }
         for (GolfPoint point : multiPoints) {
             LatLng latlonObj = new LatLng(point.getLongitude(), point.getLatitude());
             MarkerOptions opt = new MarkerOptions();
@@ -47,7 +58,7 @@ public class GolfInfoPoint {
             opt.title(point.getType());
             opt.snippet(point.getInfo());
 
-            map.addMarker(opt);
+            markerList.add(map.addMarker(opt));
         }
     }
 }
