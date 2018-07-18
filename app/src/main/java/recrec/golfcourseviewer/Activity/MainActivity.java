@@ -30,8 +30,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import recrec.golfcourseviewer.Entity.CourseViewModel;
@@ -43,10 +41,7 @@ import recrec.golfcourseviewer.Fragments.Map;
 import recrec.golfcourseviewer.Entity.GolfHole;
 import recrec.golfcourseviewer.Entity.GolfPolygon;
 import recrec.golfcourseviewer.R;
-import recrec.golfcourseviewer.Requests.ApiCallback;
 import recrec.golfcourseviewer.Requests.ApiClientRF;
-import recrec.golfcourseviewer.Requests.ApiRequest;
-import recrec.golfcourseviewer.Requests.Response.Hole;
 import recrec.golfcourseviewer.Requests.Response.Point;
 import recrec.golfcourseviewer.Requests.Response.PolygonElement;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
@@ -56,12 +51,11 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback, ApiCallback {
+        implements OnMapReadyCallback {
 
     private final int PERMISSION_REQUEST = 0;
 
     private GoogleMap map;
-    private ApiRequest api;
     private GolfHole hole;
     private GolfInfoPoint point;
 
@@ -367,39 +361,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void receiveResponse(final String resp, final ApiRequest.RequestType type,
-                                final ApiRequest.RequestResult res) {
-        // run the response on the main thread
-        final OnMapReadyCallback mcb = this;
-        final ApiCallback cb = this;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("RunOnUiThread", "in Run");
-                if (res == ApiRequest.RequestResult.RES_SUCCESS) {
-
-                    if (type == ApiRequest.RequestType.REQ_GET_COURSES) {
-
-                    } else if (type == ApiRequest.RequestType.REQ_GET_POLYGONS) {
-                        // create the hole
-                        try {
-//                            hole = holeFromResponse(resp);
-                        } catch (Exception e) {
-                            // TODO improve errors and ask for another course
-                            hole = null;
-                            showError(e.getMessage());
-                        }
-
-                    }
-
-                } else {
-                    showError("Response unsuccessful: " + resp);
-                }
-
-            }
-        });
-    }
 
     private void centerOnPlayer() throws SecurityException {
         if (map != null) {
