@@ -166,17 +166,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
-//    ArrayList<PolygonElement> holeElements = new ArrayList<>();
-//    private void buildHoles(){
-//        holeHash = new HashMap<>();
-//        ArrayList<Hole> holes = new ArrayList<>(golfCourseListViewModel.holes.getValue());
-//        ApiClientRF client = ServiceGenerator.getService();
-//
-//        for(final Hole c : holes){
-//
-//        }
-//    }
-
 
     private void createCourse(final GolfHole course)
     {
@@ -515,6 +504,9 @@ public class MainActivity extends AppCompatActivity
             }
             if(mapFrag != null){
                 ft.detach(getSupportFragmentManager().findFragmentByTag("Map"));
+            }
+            if(holesListFragment != null){
+                ft.detach(getSupportFragmentManager().findFragmentByTag("Hole"));
             }
             ft.attach(courseListFrag);
             ft.commit();
