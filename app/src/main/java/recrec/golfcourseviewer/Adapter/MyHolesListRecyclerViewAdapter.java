@@ -37,27 +37,21 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
         return new ViewHolder(view, courseViewModel);
     }
 
-    private int counter = 0;
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(String.valueOf(++counter));
+//        holder.mIdView.setText(String.valueOf(++counter));
         holder.mContentView.setText(mValues.get(position).getName());
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
     }
-
     @Override
     public int getItemCount() {
         return mValues.size();
     }
 
+    private int counter = 0;
     public class ViewHolder extends RecyclerView.ViewHolder {
+
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
@@ -68,6 +62,7 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
             mView = view;
             mIdView = (TextView) view.findViewById(R.id.item_number);
             mContentView = (TextView) view.findViewById(R.id.content);
+            mIdView.setText(String.valueOf(++counter));
 
             mContentView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -77,7 +72,6 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
                 }
             });
         }
-
 
 
         @Override
