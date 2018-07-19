@@ -9,6 +9,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import java.util.LinkedList;
 
 import recrec.golfcourseviewer.Entity.GolfPoint;
+import recrec.golfcourseviewer.db.Dao.GolfCourseDao;
 
 
 public class GolfInfoPoint {
@@ -24,10 +25,12 @@ public class GolfInfoPoint {
 
     private LinkedList<GolfPoint> multiPoints;
     private LinkedList<Marker> markerList;
+    private LinkedList<GolfPoint> courseMarker;
 
     public GolfInfoPoint(){
         multiPoints = new LinkedList<>();
         markerList = new LinkedList<>();
+        courseMarker = new LinkedList<>();
     }
 
     public void setLat(double llat){
@@ -42,9 +45,15 @@ public class GolfInfoPoint {
         info = iinfo;
     }
 
-    public void addPoint(GolfPoint point) {
+    public void addHolePoint(GolfPoint point) {
         multiPoints.add(point);
     }
+
+    public void addCoursePoint(GolfPoint point) {
+        courseMarker.add(point);
+    }
+
+
 
     public void drawInfoPoint(Resources res, GoogleMap map) {
         for(Marker marker : markerList){
@@ -59,6 +68,16 @@ public class GolfInfoPoint {
             opt.snippet(point.getInfo());
 
             markerList.add(map.addMarker(opt));
+        }
+        for (GolfPoint point : courseMarker){
+            LatLng latlonObj = new LatLng(point.getLongitude(), point.getLatitude());
+            MarkerOptions opt = new MarkerOptions();
+
+            opt.position(latlonObj);
+            opt.title(point.getType());
+            opt.snippet(point.getInfo());
+
+            map.addMarker(opt);
         }
     }
 }

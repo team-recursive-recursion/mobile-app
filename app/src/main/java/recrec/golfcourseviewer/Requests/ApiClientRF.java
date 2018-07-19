@@ -26,4 +26,7 @@ public interface ApiClientRF {
 
     @GET("api/holes/{holeId}/points")
     Call<List<Point>> getPointElementsById(@Path("holeId") String holeId);
+
+    @GET("api/courses/{courseId}/points")
+    Call<List<Point>> getCoursePointElementById(@Path("courseId") String courseId);
 }

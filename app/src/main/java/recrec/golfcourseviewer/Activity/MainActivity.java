@@ -136,6 +136,20 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        //Course Marker call
+        golfCourseListViewModel.coursePointCallResponded.observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean aBoolean) {
+                Boolean holeState = golfCourseListViewModel.coursePointCallResponded.getValue();
+                if(holeState != null){
+                    if( aBoolean && holeState){
+                        point.drawInfoPoint(getResources(), map);
+                    }
+                }
+            }
+        });
+
+
         //point call is finished
         golfCourseListViewModel.pointCallResponded.observe(this, new Observer<Boolean>() {
             @Override
@@ -197,6 +211,30 @@ public class MainActivity extends AppCompatActivity
                 golfCourseListViewModel.courseCallResponded.setValue(false);
             }
         });
+
+        Call<List<Point>> callCoursePoint = client.getCoursePointElementById(golfCourseListViewModel
+                .courseID.getValue());
+        callCoursePoint.enqueue(new Callback<List<Point>>() {
+            @Override
+            public void onResponse(Call<List<Point>> call, @NonNull Response<List<Point>> response) {
+                point.resetMultiPoints();
+                for(Point poly : response.body()){
+                    try {
+                        pointFromResponse(poly, course);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                golfCourseListViewModel.coursePointCallResponded.setValue(true);
+            }
+
+            @Override
+            public void onFailure(Call<List<Point>> call, Throwable t) {
+                Log.d("Point Course Call", "Fail: " + t.getMessage());
+                golfCourseListViewModel.coursePointCallResponded.setValue(false);
+            }
+        });
+
 
         Call<List<PolygonElement>> callHole = client.getHoleElementsById(golfCourseListViewModel.holeID.getValue());
         callHole.enqueue(new Callback<List<PolygonElement>>() {
@@ -277,7 +315,14 @@ public class MainActivity extends AppCompatActivity
             break;
         }
 
-        point.addPoint(newPoint);
+       // point.addPoint(newPoint);
+        //here
+        String id = resp.getHoleId();
+        if (id == null){
+            point.addCoursePoint(newPoint);
+        }else{
+            point.addHolePoint(newPoint);
+        }
 
 
     }
