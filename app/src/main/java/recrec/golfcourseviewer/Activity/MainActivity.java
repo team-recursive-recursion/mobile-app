@@ -149,7 +149,9 @@ public class MainActivity extends AppCompatActivity
                 Boolean holeState = golfCourseListViewModel.coursePointCallResponded.getValue();
                 if(holeState != null){
                     if( aBoolean && holeState){
-                        point.drawInfoPoint(getResources(), map);
+                        if(map != null){
+                            point.drawInfoPoint(getResources(), map);
+                        }
                     }
                 }
             }
@@ -164,7 +166,9 @@ public class MainActivity extends AppCompatActivity
                 if(holeState != null){
                     if( aBoolean && holeState){
                         if(map != null){
-                            point.drawInfoPoint(getResources(), map);
+                            if(map != null){
+                                point.drawInfoPoint(getResources(), map);
+                            }
                         }
                     }
                 }
