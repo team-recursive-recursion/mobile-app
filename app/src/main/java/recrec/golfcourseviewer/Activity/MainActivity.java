@@ -13,6 +13,7 @@ import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity
     private GoogleMap map;
     private GolfHole hole;
     private GolfInfoPoint point;
+
 
     private AppDatabase db;
 
@@ -117,7 +119,9 @@ public class MainActivity extends AppCompatActivity
                 Boolean courseState = golfCourseListViewModel.courseCallResponded.getValue();
                 if( courseState != null){
                     if( aBoolean && courseState){
-                        hole.drawHole(getResources(), map);
+                        if(map != null){
+                            hole.drawHole(getResources(), map);
+                        }
                     }
                 }
             }
@@ -130,7 +134,9 @@ public class MainActivity extends AppCompatActivity
                 Boolean holeState = golfCourseListViewModel.holeCallResponded.getValue();
                 if(holeState != null){
                     if( aBoolean && holeState){
-                        hole.drawHole(getResources(), map);
+                        if(map != null){
+                            hole.drawHole(getResources(), map);
+                        }
                     }
                 }
             }
@@ -157,7 +163,9 @@ public class MainActivity extends AppCompatActivity
                 Boolean holeState = golfCourseListViewModel.pointCallResponded.getValue();
                 if(holeState != null){
                     if( aBoolean && holeState){
-                        point.drawInfoPoint(getResources(), map);
+                        if(map != null){
+                            point.drawInfoPoint(getResources(), map);
+                        }
                     }
                 }
             }
