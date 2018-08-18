@@ -11,7 +11,6 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
@@ -31,6 +30,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,7 +54,6 @@ import recrec.golfcourseviewer.Requests.EchoWebSocketListener;
 import recrec.golfcourseviewer.Requests.Response.Point;
 import recrec.golfcourseviewer.Requests.Response.PolygonElement;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
-import recrec.golfcourseviewer.db.AppDatabase;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -90,11 +89,9 @@ public class MainActivity extends AppCompatActivity
         setFragment("Map");
 
         client = new OkHttpClient();
-        start();
 
         hole = new GolfHole();
         point = new GolfInfoPoint();
-
 
     }
 
@@ -431,9 +428,13 @@ public class MainActivity extends AppCompatActivity
     LocationCallback locationCallback = new LocationCallback(){
         @Override
         public void onLocationResult(LocationResult locationResult) {
-            String lat = Double.toString(locationResult.getLastLocation().getLatitude());
-            Log.d("web", lat);
-            ws.send(lat);
+            LatLng latLng = new LatLng(locationResult.getLastLocation().getLatitude(),
+                    locationResult.getLastLocation().getLongitude());
+            Gson gson = new Gson();
+            String jsonLatLng = gson.toJson(latLng);
+            Log.d("web", "Sending: "+ jsonLatLng);
+
+            ws.send(jsonLatLng);
         }
     };
 
@@ -523,10 +524,9 @@ public class MainActivity extends AppCompatActivity
                 hostAddress = input.getText().toString();
                 String baseUrl = "http://"+ hostAddress + ":5001/";
                 ServiceGenerator.setBaseUrl(baseUrl );
-
+                start();
             }
         });
-
         builder.show();
     }
 
