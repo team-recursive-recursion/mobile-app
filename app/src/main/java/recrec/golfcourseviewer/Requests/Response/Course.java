@@ -13,6 +13,11 @@ public class Course {
         return userId;
     }
 
+    public String getInfo() {
+        return info;
+    }
+
+    private String info;
     private String courseId;
     private String courseName;
     private String userId;

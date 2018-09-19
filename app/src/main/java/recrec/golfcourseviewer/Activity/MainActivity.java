@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity
         subscribe();
         // ask the user for a URL
         showInputDialog();
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(recrec.golfcourseviewer.R.id.navigation);
+        BottomNavigationView navigation =  findViewById(recrec.golfcourseviewer.R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         setFragment("Map");
 
@@ -129,10 +129,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 Boolean courseState = golfCourseListViewModel.courseCallResponded.getValue();
-                if( courseState != null){
-                    if( aBoolean && courseState){
-                        if(map != null){
-                            hole.drawHole(getResources(), map);
+                if(aBoolean != null){
+                    if( courseState != null){
+                        if( aBoolean && courseState){
+                            if(map != null){
+                                hole.drawHole(getResources(), map);
+                            }
                         }
                     }
                 }
@@ -144,10 +146,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 Boolean holeState = golfCourseListViewModel.holeCallResponded.getValue();
-                if(holeState != null){
-                    if( aBoolean && holeState){
-                        if(map != null){
-                            hole.drawHole(getResources(), map);
+                if(aBoolean != null){
+                    if(holeState != null){
+                        if( aBoolean && holeState){
+                            if(map != null){
+                                hole.drawHole(getResources(), map);
+                            }
                         }
                     }
                 }
@@ -159,10 +163,12 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 Boolean holeState = golfCourseListViewModel.coursePointCallResponded.getValue();
-                if(holeState != null){
-                    if( aBoolean && holeState){
-                        if(map != null){
-                            point.drawInfoPoint(getResources(), map);
+                if( aBoolean != null){
+                    if(holeState != null){
+                        if( aBoolean && holeState){
+                            if(map != null){
+                                point.drawInfoPoint(getResources(), map);
+                            }
                         }
                     }
                 }
@@ -175,9 +181,9 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 Boolean holeState = golfCourseListViewModel.pointCallResponded.getValue();
-                if(holeState != null){
-                    if( aBoolean && holeState){
-                        if(map != null){
+                if(aBoolean != null){
+                    if(holeState != null){
+                        if( aBoolean && holeState){
                             if(map != null){
                                 point.drawInfoPoint(getResources(), map);
                             }
@@ -205,7 +211,7 @@ public class MainActivity extends AppCompatActivity
 
         callCourse.enqueue(new Callback<List<PolygonElement>>() {
             @Override
-            public void onResponse(Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
+            public void onResponse(@NonNull Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
                 if(response.body() != null){
                     for(PolygonElement poly : response.body()){
                         try {
@@ -219,7 +225,7 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onFailure(Call<List<PolygonElement>> call, Throwable t) {
+            public void onFailure(@NonNull Call<List<PolygonElement>> call, @NonNull Throwable t) {
                 Log.d("Course Call", "Fail: " + t.getMessage());
                 golfCourseListViewModel.courseCallResponded.setValue(false);
             }
@@ -229,7 +235,7 @@ public class MainActivity extends AppCompatActivity
                 .courseID.getValue());
         callCoursePoint.enqueue(new Callback<List<Point>>() {
             @Override
-            public void onResponse(Call<List<Point>> call, @NonNull Response<List<Point>> response) {
+            public void onResponse(@NonNull Call<List<Point>> call, @NonNull Response<List<Point>> response) {
                 point.resetMultiPoints();
                 for(Point poly : response.body()){
                     try {
@@ -242,7 +248,7 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onFailure(Call<List<Point>> call, Throwable t) {
+            public void onFailure(@NonNull Call<List<Point>> call, @NonNull Throwable t) {
                 Log.d("Point Course Call", "Fail: " + t.getMessage());
                 golfCourseListViewModel.coursePointCallResponded.setValue(false);
             }
@@ -270,7 +276,7 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onFailure(Call<List<PolygonElement>> call, Throwable t) {
+            public void onFailure(@NonNull Call<List<PolygonElement>> call, @NonNull Throwable t) {
                 Log.d("Hole Call", "Fail: " + t.getMessage());
                 golfCourseListViewModel.holeCallResponded.setValue(false);
             }
@@ -280,7 +286,7 @@ public class MainActivity extends AppCompatActivity
                 .holeID.getValue());
         callPoint.enqueue(new Callback<List<Point>>() {
             @Override
-            public void onResponse(Call<List<Point>> call, @NonNull Response<List<Point>> response) {
+            public void onResponse(@NonNull Call<List<Point>> call, @NonNull Response<List<Point>> response) {
                 point.resetMultiPoints();
                 for(Point poly : response.body()){
                     try {
@@ -294,7 +300,7 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onFailure(Call<List<Point>> call, Throwable t) {
+            public void onFailure(@NonNull Call<List<Point>> call, @NonNull Throwable t) {
                 Log.d("Point Call", "Fail: " + t.getMessage());
                 golfCourseListViewModel.pointCallResponded.setValue(false);
             }
@@ -412,15 +418,6 @@ public class MainActivity extends AppCompatActivity
             centerOnPlayer();
         }
 
-//         Location handling and sending to websocket.
-//        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-//        mLocationRequest = LocationRequest.create();
-//        mLocationRequest.setInterval(10000);
-//        mLocationRequest.setFastestInterval(10000);
-//        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-//        HandlerThread t = new HandlerThread("myHandlerThread");
-//        t.start();
-//        mFusedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, t.getLooper());
 
     }
 

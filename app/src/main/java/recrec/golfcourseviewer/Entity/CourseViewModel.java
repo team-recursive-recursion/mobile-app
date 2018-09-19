@@ -32,8 +32,6 @@ public class CourseViewModel extends AndroidViewModel {
     public MutableLiveData<Boolean> courseCallResponded = new MutableLiveData<>();
     public MutableLiveData<List<PolygonElement>> holesPolygons = new MutableLiveData<>();
 
-    public AppDatabase db;
-
     public CourseViewModel(@NonNull Application application) {
         super(application);
     }

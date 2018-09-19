@@ -83,8 +83,10 @@ public class HolesListFragment extends Fragment {
         call.enqueue(new Callback<List<Hole>>() {
             @Override
             public void onResponse(Call<List<Hole>> call, Response<List<Hole>> response) {
-                courseViewModel.holes.setValue(response.body());
-                Log.d("Hole", response.body().get(0).getName());
+                if(!response.body().isEmpty()){
+                    courseViewModel.holes.setValue(response.body());
+                    Log.d("Hole", response.body().get(0).getName());
+                }
             }
 
             @Override
@@ -102,7 +104,7 @@ public class HolesListFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            adapter = new MyHolesListRecyclerViewAdapter(holesList,courseViewModel);
+            adapter = new MyHolesListRecyclerViewAdapter(holesList,courseViewModel, getActivity());
             recyclerView.setAdapter(adapter);
         }
         return view;

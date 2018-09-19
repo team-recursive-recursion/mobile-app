@@ -12,6 +12,7 @@
     <string name="title_notifications">Notifications</string>
     <string name="http_beginning">http://</string>
     <string name="api_port_end">:5001</string>
+    <string name="par">Par:</string>
 
     <string-array name="planets">
         <item>Mercurious</item>

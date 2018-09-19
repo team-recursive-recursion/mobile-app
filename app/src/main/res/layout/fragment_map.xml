@@ -34,7 +34,7 @@
         app:srcCompat="@drawable/ic_arrow_forward_black_24dp" />
 
     <TextView
-        android:id="@+id/txt_distance"
+        android:id="@+id/txt_weather"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"

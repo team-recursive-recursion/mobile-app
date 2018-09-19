@@ -47,7 +47,6 @@ public class GolfCourseListFragment extends Fragment {
 
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
-    public MainActivity mainActivity;
 
     public GolfCourseListFragment() {
     }
@@ -108,8 +107,10 @@ public class GolfCourseListFragment extends Fragment {
         call.enqueue(new Callback<List<Course>>() {
             @Override
             public void onResponse(Call<List<Course>> call, Response<List<Course>> response) {
-                Log.d("CoursesCall", response.body().get(0).getCourseName());
-                courseViewModel.courses.setValue(response.body());
+                if(!response.body().isEmpty()){
+                    Log.d("CoursesCall", response.body().get(0).getCourseName());
+                    courseViewModel.courses.setValue(response.body());
+                }
             }
 
             @Override

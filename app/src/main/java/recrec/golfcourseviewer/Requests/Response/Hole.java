@@ -13,6 +13,11 @@ public class Hole {
         return courseId;
     }
 
+    public String getInfo() {
+        return info;
+    }
+
+    private String info;
     private String holeId;
     private String name;
     private String courseId;
