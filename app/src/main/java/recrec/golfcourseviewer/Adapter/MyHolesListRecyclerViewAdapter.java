@@ -1,5 +1,6 @@
 package recrec.golfcourseviewer.Adapter;
 
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,10 +22,12 @@ import java.util.List;
 public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHolesListRecyclerViewAdapter.ViewHolder> {
     private List<Hole> mValues;
     private CourseViewModel courseViewModel;
+    private FragmentActivity fragmentActivity;
 
-    public MyHolesListRecyclerViewAdapter(List<Hole> items, CourseViewModel vm) {
+    public MyHolesListRecyclerViewAdapter(List<Hole> items, CourseViewModel vm, FragmentActivity ma) {
         mValues = items;
         courseViewModel = vm;
+        fragmentActivity = ma;
     }
     public void setmValues(List<Hole> mValues) {
         this.mValues = mValues;
@@ -40,8 +43,9 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-//        holder.mIdView.setText(String.valueOf(++counter));
         holder.mContentView.setText(mValues.get(position).getName());
+        holder.mInfoView.setText(fragmentActivity.getString(R.string.par)
+                + mValues.get(position).getInfo());
 
     }
     @Override
@@ -55,6 +59,7 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
+        public final TextView mInfoView;
         public Hole mItem;
 
         public ViewHolder(View view, final CourseViewModel vm) {
@@ -62,9 +67,10 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
             mView = view;
             mIdView = (TextView) view.findViewById(R.id.item_number);
             mContentView = (TextView) view.findViewById(R.id.content);
+            mInfoView = (TextView) view.findViewById(R.id.hole_info);
             mIdView.setText(String.valueOf(++counter));
 
-            mContentView.setOnClickListener(new View.OnClickListener() {
+            mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     vm.holeID.setValue(mItem.getHoleId());

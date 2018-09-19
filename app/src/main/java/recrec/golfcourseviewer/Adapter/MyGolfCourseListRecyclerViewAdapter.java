@@ -38,9 +38,9 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-
+        holder.mInfo.setText(mValues.get(position).getInfo());
         holder.mItem = mValues.get(position).getCourseName();
-        holder.mContentView.setText(mValues.get(position).getCourseName());
+        holder.mCourseNameView.setText(mValues.get(position).getCourseName());
 
     }
 
@@ -51,13 +51,15 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final TextView mContentView;
+        public final TextView mCourseNameView;
+        public final TextView mInfo;
         public String mItem;
 
         public ViewHolder(View view, final CourseViewModel c) {
             super(view);
             mView = view;
-            mContentView = (TextView) view.findViewById(R.id.course_name);
+            mCourseNameView = (TextView) view.findViewById(R.id.course_name);
+            mInfo = (TextView) view.findViewById(R.id.course_info);
 
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -71,7 +73,7 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + mCourseNameView.getText() + "'";
         }
 
     }

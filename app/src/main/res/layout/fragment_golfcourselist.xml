@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/course_name"
@@ -11,5 +11,15 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
         tools:text="CourseName"
+        android:textSize="@dimen/list_text_size"
         android:textAppearance="?attr/textAppearanceListItem" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/course_info"
+        android:layout_margin="8dp"
+        android:paddingStart="10dp"
+        android:paddingEnd="8dp"
+        tools:text="Info about the course that is very cool and amazing because I like golf courses and various other things"/>
 </LinearLayout>

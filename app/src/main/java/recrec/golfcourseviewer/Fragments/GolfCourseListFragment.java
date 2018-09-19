@@ -6,11 +6,15 @@
  * */
 package recrec.golfcourseviewer.Fragments;
 
+import android.Manifest;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,6 +23,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +47,6 @@ public class GolfCourseListFragment extends Fragment {
 
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
-    public MainActivity mainActivity;
 
     public GolfCourseListFragment() {
     }
@@ -64,6 +72,7 @@ public class GolfCourseListFragment extends Fragment {
     MyGolfCourseListRecyclerViewAdapter adapter;
     CourseViewModel courseViewModel;
     ArrayList<Course> courseModels = new ArrayList<>();
+    FusedLocationProviderClient mFusedLocationClient;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -71,20 +80,42 @@ public class GolfCourseListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_golfcourselist_list, container, false);
         courseViewModel = ViewModelProviders.of(getActivity()).get(CourseViewModel.class);
 
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        if (ActivityCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
+//            Not sure what to do here since the permission is granted in the previous fragment.
+        }
+        final double[] latLon = {0,0};
+
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            latLon[0] = location.getLatitude();
+                            latLon[1] = location.getLongitude();
+                        }
+                    }
+                });
+
         ApiClientRF client  = ServiceGenerator.getService();
-        Call<List<Course>> call = client.getCourses();
+        Call<List<Course>> call = client.getCoursesWithLocation(latLon[0], latLon[1]);
         subscribeAdapter();
 
         call.enqueue(new Callback<List<Course>>() {
             @Override
             public void onResponse(Call<List<Course>> call, Response<List<Course>> response) {
-                Log.d("Hey", response.body().get(0).getCourseName());
-                courseViewModel.courses.setValue(response.body());
+                if(!response.body().isEmpty()){
+                    Log.d("CoursesCall", response.body().get(0).getCourseName());
+                    courseViewModel.courses.setValue(response.body());
+                }
             }
 
             @Override
             public void onFailure(Call<List<Course>> call, Throwable t) {
-                Log.d("Hey","Call to getCourse failed: " + t.getMessage());
+                Log.d("CoursesCall","Call to getCourse failed: " + t.getMessage());
             }
         });
 
