@@ -150,7 +150,8 @@ public class UnitTest {
     public void can_set_Point_Lat() throws Exception {
         try{
             GolfPoint point = new GolfPoint(10.0,5.5);
-            assertEquals(10.0,point.getLatitude(),0);
+            point.setLatitude(11.0);
+            assertEquals(11.0,point.getLatitude(),0);
         }
         catch (Exception e){
             Log.e("Create Error","Could not set and get Point Latitude");
@@ -161,7 +162,8 @@ public class UnitTest {
     public void can_set_Point_Lon() throws Exception {
         try{
             GolfPoint point = new GolfPoint(10.0,5.5);
-            assertEquals(5.5,point.getLongitude(),0);
+            point.setLongitude(6.0);
+            assertEquals(6.0,point.getLongitude(),0);
         }
         catch (Exception e){
             Log.e("Create Error","Could not set and get Point Longitude");
@@ -171,7 +173,7 @@ public class UnitTest {
     @Test
     public void can_connect_to_server() {
         try{
-            URL myUrl = new URL("192.168.8.1:5001"); //ADD API Here!
+            URL myUrl = new URL("127.0.0.1:5001"); //ADD API Here!
             URLConnection connection = myUrl.openConnection();
             connection.connect();
             assertTrue(true);
@@ -179,16 +181,5 @@ public class UnitTest {
             Log.e("Connect Error","Could not connect to API");
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 
 }
