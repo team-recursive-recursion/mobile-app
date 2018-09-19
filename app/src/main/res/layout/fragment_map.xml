@@ -33,4 +33,16 @@
         app:rippleColor="@color/colorAccent"
         app:srcCompat="@drawable/ic_arrow_forward_black_24dp" />
 
+    <TextView
+        android:id="@+id/txt_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="visible"
+        android:text="HELLO WORLD"
+        android:background="@drawable/rounded_corners"/>
+
 </android.support.constraint.ConstraintLayout>

@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
@@ -27,7 +26,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 import com.google.gson.Gson;
@@ -414,14 +412,15 @@ public class MainActivity extends AppCompatActivity
             centerOnPlayer();
         }
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mLocationRequest = LocationRequest.create();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(10000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        HandlerThread t = new HandlerThread("myHandlerThread");
-        t.start();
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, t.getLooper());
+//         Location handling and sending to websocket.
+//        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//        mLocationRequest = LocationRequest.create();
+//        mLocationRequest.setInterval(10000);
+//        mLocationRequest.setFastestInterval(10000);
+//        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+//        HandlerThread t = new HandlerThread("myHandlerThread");
+//        t.start();
+//        mFusedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, t.getLooper());
 
     }
 
@@ -524,7 +523,7 @@ public class MainActivity extends AppCompatActivity
                 hostAddress = input.getText().toString();
                 String baseUrl = "http://"+ hostAddress + ":5001/";
                 ServiceGenerator.setBaseUrl(baseUrl );
-                start();
+//                start();
             }
         });
         builder.show();
