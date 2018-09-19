@@ -10,10 +10,12 @@ import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,11 +23,13 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 import com.google.gson.Gson;
@@ -72,6 +76,9 @@ public class MainActivity extends AppCompatActivity
     private String hostAddress;
 
     public CourseViewModel golfCourseListViewModel;
+
+    public static double playerLat;
+    public static double playerLon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -419,6 +426,28 @@ public class MainActivity extends AppCompatActivity
         }
 
 
+
+
+
+
+
+//         Location handling and sending to websocket.
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setInterval(10000);
+        mLocationRequest.setFastestInterval(10000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        HandlerThread t = new HandlerThread("myHandlerThread");
+        t.start();
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, t.getLooper());
+
+    }
+
+
+    public void onInfoWindowClick(Marker marker) {
+        Toast.makeText(this, "Info window clicked",
+                Toast.LENGTH_SHORT).show();
     }
 
     LocationCallback locationCallback = new LocationCallback(){
@@ -430,7 +459,8 @@ public class MainActivity extends AppCompatActivity
             String jsonLatLng = gson.toJson(latLng);
             Log.d("web", "Sending: "+ jsonLatLng);
 
-            ws.send(jsonLatLng);
+            playerLat = locationResult.getLastLocation().getLatitude();
+            playerLon = locationResult.getLastLocation().getLongitude();
         }
     };
 
@@ -457,6 +487,9 @@ public class MainActivity extends AppCompatActivity
             Criteria criteria = new Criteria();
             Location location = locationManager.getLastKnownLocation(locationManager
                     .getBestProvider(criteria, false));
+
+            playerLat = location.getLatitude();
+            playerLon = location.getLongitude();
 
             if (location != null)
             {
