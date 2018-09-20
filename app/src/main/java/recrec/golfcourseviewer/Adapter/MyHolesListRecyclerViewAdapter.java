@@ -1,6 +1,6 @@
 package recrec.golfcourseviewer.Adapter;
 
-import android.support.v4.app.FragmentActivity;
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,9 +22,10 @@ import java.util.List;
 public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHolesListRecyclerViewAdapter.ViewHolder> {
     private List<Hole> mValues;
     private CourseViewModel courseViewModel;
-    private FragmentActivity fragmentActivity;
+    private Context fragmentActivity;
 
-    public MyHolesListRecyclerViewAdapter(List<Hole> items, CourseViewModel vm, FragmentActivity ma) {
+    public MyHolesListRecyclerViewAdapter(List<Hole> items, CourseViewModel
+            vm, Context ma) {
         mValues = items;
         courseViewModel = vm;
         fragmentActivity = ma;
@@ -56,11 +57,11 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
     private int counter = 0;
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public final View mView;
-        public final TextView mIdView;
-        public final TextView mContentView;
-        public final TextView mInfoView;
-        public Hole mItem;
+        final View mView;
+        final TextView mIdView;
+        private final TextView mContentView;
+        final TextView mInfoView;
+        Hole mItem;
 
         public ViewHolder(View view, final CourseViewModel vm) {
             super(view);

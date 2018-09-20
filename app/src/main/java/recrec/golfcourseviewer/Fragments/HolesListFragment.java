@@ -104,7 +104,8 @@ public class HolesListFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            adapter = new MyHolesListRecyclerViewAdapter(holesList,courseViewModel, getActivity());
+            adapter = new MyHolesListRecyclerViewAdapter(holesList,
+                    courseViewModel, getActivity().getApplicationContext());
             recyclerView.setAdapter(adapter);
         }
         return view;

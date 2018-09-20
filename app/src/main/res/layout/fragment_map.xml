@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
-        android:layout_marginBottom="60dp"
+        android:layout_marginBottom="70dp"
         android:layout_marginEnd="24dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -37,12 +37,24 @@
         android:id="@+id/txt_weather"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_margin="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:visibility="visible"
-        android:text="HELLO WORLD"
+        android:visibility="invisible"
+        tools:text="Durban: 30"
+        android:padding="6dp"
+        android:background="@drawable/rounded_corners"/>
+
+    <TextView
+        android:id="@+id/txt_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="invisible"
+        tools:text="501m"
+        android:padding="6dp"
         android:background="@drawable/rounded_corners"/>
 
 </android.support.constraint.ConstraintLayout>

@@ -1,21 +1,23 @@
 package recrec.golfcourseviewer.Activity;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.HandlerThread;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,7 +25,6 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -32,11 +33,11 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
-import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -62,7 +63,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 
-
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback {
 
@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity
     private String hostAddress;
 
     public CourseViewModel golfCourseListViewModel;
+    SharedPreferences sharedPreferences;
 
     public static double playerLat;
     public static double playerLon;
@@ -89,10 +90,12 @@ public class MainActivity extends AppCompatActivity
         subscribe();
         // ask the user for a URL
         showInputDialog();
-        BottomNavigationView navigation =  findViewById(recrec.golfcourseviewer.R.id.navigation);
+        BottomNavigationView navigation = findViewById(recrec.golfcourseviewer.R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         setFragment("Map");
 
+        sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(this);
         client = new OkHttpClient();
 
         hole = new GolfHole();
@@ -101,8 +104,7 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private void subscribe()
-    {
+    private void subscribe() {
         //When Course is chosen
         golfCourseListViewModel.courseID.observe(this, new Observer<String>() {
             @Override
@@ -119,13 +121,25 @@ public class MainActivity extends AppCompatActivity
                 createCourse(hole);
                 setFragment("Map");
                 // Get Map ready
-                if(map == null){
+                if (map == null) {
                     Map activeMapFragment = (Map) getSupportFragmentManager()
                             .findFragmentById(R.id.fragment_container);
                     SupportMapFragment mapFragment = (SupportMapFragment)
                             activeMapFragment.getChildFragmentManager().
                                     findFragmentById(R.id.map);
                     mapFragment.getMapAsync(mcb);
+                }
+                if (map != null) {
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(),
+                            Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions
+                                ((Activity) getApplicationContext(),
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                PERMISSION_REQUEST);
+                    }else{
+                        mFusedLocationClient.requestLocationUpdates
+                                (mLocationRequest, locationCallback, t.getLooper());
+                    }
                 }
 
             }
@@ -136,12 +150,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 Boolean courseState = golfCourseListViewModel.courseCallResponded.getValue();
-                if(aBoolean != null){
-                    if( courseState != null){
-                        if( aBoolean && courseState){
-                            if(map != null){
-                                hole.drawHole(getResources(), map);
-                            }
+                if(aBoolean != null && courseState != null){
+                    if( aBoolean && courseState){
+                        if(map != null){
+                            hole.drawHole(getResources(), map);
                         }
                     }
                 }
@@ -153,12 +165,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 Boolean holeState = golfCourseListViewModel.holeCallResponded.getValue();
-                if(aBoolean != null){
-                    if(holeState != null){
-                        if( aBoolean && holeState){
-                            if(map != null){
-                                hole.drawHole(getResources(), map);
-                            }
+                if(aBoolean != null && holeState != null){
+                    if( aBoolean && holeState){
+                        if(map != null){
+                            hole.drawHole(getResources(), map);
                         }
                     }
                 }
@@ -170,12 +180,10 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 Boolean holeState = golfCourseListViewModel.coursePointCallResponded.getValue();
-                if( aBoolean != null){
-                    if(holeState != null){
-                        if( aBoolean && holeState){
-                            if(map != null){
-                                point.drawInfoPoint(getResources(), map);
-                            }
+                if(aBoolean != null && holeState != null){
+                    if( aBoolean && holeState){
+                        if(map != null){
+                            point.drawInfoPoint(getResources(), map);
                         }
                     }
                 }
@@ -188,26 +196,16 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
                 Boolean holeState = golfCourseListViewModel.pointCallResponded.getValue();
-                if(aBoolean != null){
-                    if(holeState != null){
-                        if( aBoolean && holeState){
-                            if(map != null){
-                                point.drawInfoPoint(getResources(), map);
-                            }
+                if(aBoolean != null && holeState != null){
+                    if( aBoolean && holeState){
+                        if(map != null){
+                            point.drawInfoPoint(getResources(), map);
                         }
                     }
                 }
             }
         });
 
-
-        //When hole polygons are retrieved it is collected in the ArrayList
-        golfCourseListViewModel.holesPolygons.observe(this, new Observer<List<PolygonElement>>() {
-            @Override
-            public void onChanged(@Nullable List<PolygonElement> polygonElements) {
-//                holeElements.addAll(polygonElements);
-            }
-        });
     }
 
     private void createCourse(final GolfHole course)
@@ -218,7 +216,8 @@ public class MainActivity extends AppCompatActivity
 
         callCourse.enqueue(new Callback<List<PolygonElement>>() {
             @Override
-            public void onResponse(@NonNull Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
+            public void onResponse(@NonNull Call<List<PolygonElement>> call,
+                                   @NonNull Response<List<PolygonElement>> response) {
                 if(response.body() != null){
                     for(PolygonElement poly : response.body()){
                         try {
@@ -246,7 +245,7 @@ public class MainActivity extends AppCompatActivity
                 point.resetMultiPoints();
                 for(Point poly : response.body()){
                     try {
-                        pointFromResponse(poly, course);
+                        pointFromResponse(poly);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -265,7 +264,7 @@ public class MainActivity extends AppCompatActivity
         Call<List<PolygonElement>> callHole = client.getHoleElementsById(golfCourseListViewModel.holeID.getValue());
         callHole.enqueue(new Callback<List<PolygonElement>>() {
             @Override
-            public void onResponse(Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
+            public void onResponse(@NonNull Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
                 if(response.body() != null){
                     course.resetHolePolygons();
                     for(PolygonElement poly : response.body()){
@@ -297,12 +296,12 @@ public class MainActivity extends AppCompatActivity
                 point.resetMultiPoints();
                 for(Point poly : response.body()){
                     try {
-
-                        pointFromResponse(poly, course);
+                        pointFromResponse(poly);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
+                golfCourseListViewModel.pointsPolygons.setValue(response.body());
                 golfCourseListViewModel.pointCallResponded.setValue(true);
             }
 
@@ -313,9 +312,24 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+
     }
 
-    private void pointFromResponse(Point resp, GolfHole hole) throws Exception {
+    public enum POINTTYPE {
+        PIN(0),
+        HOLE(1),
+        TEE(2);
+
+        private final int type;
+        POINTTYPE(int type){
+            this.type = type;
+        }
+        int getType(){
+            return type;
+        }
+    }
+
+    private void pointFromResponse(Point resp) throws Exception {
         if (point == null){
             point = new GolfInfoPoint();
         }
@@ -385,7 +399,8 @@ public class MainActivity extends AppCompatActivity
         String geoJson = resp.getGeoJson();
         JSONObject geoJsonObject = new JSONObject(geoJson);
 
-        JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0);
+        JSONArray coords = geoJsonObject.getJSONArray("coordinates")
+                .getJSONArray(0);
         for (int j = 0; j < coords.length(); ++j) {
             JSONArray pair = coords.getJSONArray(j);
             double lat = pair.getDouble(1);
@@ -403,6 +418,7 @@ public class MainActivity extends AppCompatActivity
 
     FusedLocationProviderClient mFusedLocationClient;
     LocationRequest mLocationRequest;
+    HandlerThread t;
     /*------------------------------------------------------------------------
     *   onMapReady(GoogleMap)
     *       This is the function that is called once the map is initialized.
@@ -415,58 +431,101 @@ public class MainActivity extends AppCompatActivity
         this.map = map;
 
         // attempt to request the player location
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission
+                .ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             // request the permissions
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST);
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    PERMISSION_REQUEST);
         } else {
             map.setMyLocationEnabled(true);
             centerOnPlayer();
         }
 
-
-
-
-
-
-
-//         Location handling and sending to websocket.
-
+//         Location handling and sending to web socket.
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setInterval(10000);
         mLocationRequest.setFastestInterval(10000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        HandlerThread t = new HandlerThread("myHandlerThread");
+        t = new HandlerThread("myHandlerThread");
         t.start();
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, t.getLooper());
 
     }
 
-
-    public void onInfoWindowClick(Marker marker) {
-        Toast.makeText(this, "Info window clicked",
-                Toast.LENGTH_SHORT).show();
-    }
-
     LocationCallback locationCallback = new LocationCallback(){
         @Override
         public void onLocationResult(LocationResult locationResult) {
-            LatLng latLng = new LatLng(locationResult.getLastLocation().getLatitude(),
-                    locationResult.getLastLocation().getLongitude());
-            Gson gson = new Gson();
-            String jsonLatLng = gson.toJson(latLng);
-            Log.d("web", "Sending: "+ jsonLatLng);
-
             playerLat = locationResult.getLastLocation().getLatitude();
             playerLon = locationResult.getLastLocation().getLongitude();
+
+            try {
+                JSONObject obj = new JSONObject().put("Location",
+                        new JSONObject().put("type","Point")
+                                .put("coordinates", new JSONArray
+                                        ("["+Double.toString(playerLat)+"," +
+                                                ""+Double.toString(playerLon)
+                                                +"]")).toString());
+                String id = sharedPreferences.getString("userId", null);
+                if(id != null){
+                    obj = obj.put("UserID", id);
+                }
+                String toSend = obj.toString();
+                Log.d("web", "Sending: " +toSend);
+                ws.send(toSend);
+
+                Location playerLoc = new Location("");
+                playerLoc.setLatitude(playerLat);
+                playerLoc.setLongitude(playerLon);
+                setDistanceToHole(playerLoc);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
         }
     };
 
+    Location holeLoc = null;
+    public void setDistanceToHole(Location player){
+        List<Point> pointList = golfCourseListViewModel.pointsPolygons
+                .getValue();
+        String holeId = golfCourseListViewModel.holeID.getValue();
+        String geoJSON = "";
+        if(pointList != null && holeId != null){
+            for(Point poly : pointList){
+                if(poly.getPointType() == POINTTYPE.HOLE.getType() && poly
+                        .getHoleId().equals(holeId)){
+                    geoJSON = poly.getGeoJson();
+                    break;
+                }
+            }
+            try {
+                JSONArray coordinates = new JSONObject(geoJSON)
+                        .getJSONArray("coordinates");
+                holeLoc = new Location("");
+                holeLoc.setLongitude(coordinates.getDouble(0));
+                holeLoc.setLatitude(coordinates.getDouble(1));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        final double distance = player.distanceTo(holeLoc);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                golfCourseListViewModel.distanceToHole.setValue(distance);
+            }
+        });
+
+    }
+
     @Override
-    public void onRequestPermissionsResult(int request, String perm[],
-                                           int[] grant) {
+    public void onRequestPermissionsResult(int request, @NonNull String perm[],
+                                           @NonNull int[] grant) {
         if (request == PERMISSION_REQUEST) {
             if (grant.length > 0 && grant[0] ==
                     PackageManager.PERMISSION_GRANTED) {
@@ -485,23 +544,30 @@ public class MainActivity extends AppCompatActivity
             LocationManager locationManager = (LocationManager)getSystemService
                     (Context.LOCATION_SERVICE);
             Criteria criteria = new Criteria();
-            Location location = locationManager.getLastKnownLocation(locationManager
-                    .getBestProvider(criteria, false));
+            Location location = null;
+            if (locationManager != null) {
+                location = locationManager.getLastKnownLocation(locationManager
+                        .getBestProvider(criteria, false));
+            }
 
-            playerLat = location.getLatitude();
-            playerLon = location.getLongitude();
+            playerLat = (location == null) ? 0: location.getLatitude();
+            playerLon = (location == null) ? 0 : location.getLongitude();
 
-            if (location != null)
-            {
+
+            if (location != null) {
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(
                         location.getLatitude(), location.getLongitude()), 13));
+            }
 
-                CameraPosition cameraPosition = new CameraPosition.Builder()
+            CameraPosition cameraPosition = null;
+            if (location != null) {
+                cameraPosition = new CameraPosition.Builder()
                         .target(new LatLng(location.getLatitude(), location.getLongitude()))
                         .zoom(17)
                         .build();
-                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             }
+            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
         }
     }
 
@@ -519,11 +585,13 @@ public class MainActivity extends AppCompatActivity
                 }
                 if(!holeGeoJson.equals("")){
                     JSONObject geoJsonObject = new JSONObject(holeGeoJson);
-                    JSONArray coords = geoJsonObject.getJSONArray("coordinates").getJSONArray(0).getJSONArray(0);
-                    double lat = coords.getDouble(1);
-                    double lon = coords.getDouble(0);
-                    LatLng coordsLL = new LatLng(lat, lon);
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordsLL, 17f));
+                    JSONArray coordinates = geoJsonObject
+                            .getJSONArray("coordinates").getJSONArray(0)
+                            .getJSONArray(0);
+                    double lat = coordinates.getDouble(1);
+                    double lon = coordinates.getDouble(0);
+                    LatLng coordinatesLL = new LatLng(lat, lon);
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinatesLL, 17f));
                 }
 
             }catch (JSONException e){
@@ -553,19 +621,12 @@ public class MainActivity extends AppCompatActivity
                 hostAddress = input.getText().toString();
                 String baseUrl = "http://"+ hostAddress + ":5001/";
                 ServiceGenerator.setBaseUrl(baseUrl );
-//                start();
+                wsStart();
             }
         });
         builder.show();
     }
 
-    private void showError(String title, String msg) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title)
-                .setMessage(msg)
-                .setPositiveButton("OK", null)
-                .show();
-    }
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -595,7 +656,7 @@ public class MainActivity extends AppCompatActivity
 
     public void setFragment(String fragName){
         android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        if(fragName == "Map"){
+        if(fragName.equals("Map")){
             if(mapFrag == null) {
                 mapFrag = new Map();
                 ft.add(recrec.golfcourseviewer.R.id.fragment_container, mapFrag,
@@ -612,7 +673,7 @@ public class MainActivity extends AppCompatActivity
             ft.commitNow();
 
         }
-        if(fragName == "CourseList"){
+        if(fragName.equals("CourseList")){
             if(courseListFrag == null){
                 courseListFrag = new GolfCourseListFragment();
                 ft.add(R.id.fragment_container,courseListFrag,"List");
@@ -626,7 +687,7 @@ public class MainActivity extends AppCompatActivity
             ft.attach(courseListFrag);
             ft.commit();
         }
-        if(fragName == "HolesList"){
+        if(fragName.equals("HolesList")){
             if(holesListFragment == null){
                 holesListFragment = new HolesListFragment();
                 ft.add(R.id.fragment_container, holesListFragment, "Hole");
@@ -642,13 +703,13 @@ public class MainActivity extends AppCompatActivity
 
 /*  WebSocket things    */
     WebSocket ws;
-    private void start() {
+    private void wsStart() {
         Request request = new Request.Builder().url("ws://"+hostAddress+":5001/ws").build();
-        EchoWebSocketListener listener = new EchoWebSocketListener();
+        EchoWebSocketListener listener = new EchoWebSocketListener
+                (this, golfCourseListViewModel);
         ws = client.newWebSocket(request, listener);
         client.dispatcher().executorService().shutdown();
     }
-
 
 
 }
