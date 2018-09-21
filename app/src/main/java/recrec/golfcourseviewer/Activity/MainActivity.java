@@ -513,7 +513,7 @@ public class MainActivity extends AppCompatActivity
                 e.printStackTrace();
             }
         }
-        final double distance = player.distanceTo(holeLoc);
+        final double distance = (holeLoc == null )? 0: player.distanceTo(holeLoc);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -566,7 +566,9 @@ public class MainActivity extends AppCompatActivity
                         .zoom(17)
                         .build();
             }
-            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            if(cameraPosition != null){
+                map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
 
         }
     }
