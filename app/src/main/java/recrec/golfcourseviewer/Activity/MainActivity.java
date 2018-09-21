@@ -465,8 +465,8 @@ public class MainActivity extends AppCompatActivity
                 JSONObject obj = new JSONObject().put("Location",
                         new JSONObject().put("type","Point")
                                 .put("coordinates", new JSONArray
-                                        ("["+Double.toString(playerLat)+"," +
-                                                ""+Double.toString(playerLon)
+                                        ("["+Double.toString(playerLon)+"," +
+                                                ""+Double.toString(playerLat)
                                                 +"]")).toString());
                 String id = sharedPreferences.getString("userId", null);
                 if(id != null){
