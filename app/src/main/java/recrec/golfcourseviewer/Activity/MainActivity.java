@@ -276,7 +276,8 @@ public class MainActivity extends AppCompatActivity
                 golfCourseListViewModel.holeID.getValue());
         callHole.enqueue(new Callback<List<PolygonElement>>() {
             @Override
-            public void onResponse(@NonNull Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
+            public void onResponse(@NonNull Call<List<PolygonElement>> call,
+                        @NonNull Response<List<PolygonElement>> response) {
                 if(response.isSuccessful()){
                     course.resetHolePolygons();
                     for(PolygonElement poly : response.body()){
@@ -294,7 +295,8 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<PolygonElement>> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<List<PolygonElement>> call,
+                                  @NonNull Throwable t) {
                 Log.d("Hole Call", "Fail: " + t.getMessage());
                 golfCourseListViewModel.holeCallResponded.setValue(false);
             }
@@ -318,7 +320,8 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<Point>> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<List<Point>> call,
+                                  @NonNull Throwable t) {
                 Log.d("Point Call", "Fail: " + t.getMessage());
                 golfCourseListViewModel.pointCallResponded.setValue(false);
             }
