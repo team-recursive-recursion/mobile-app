@@ -486,7 +486,7 @@ public class MainActivity extends AppCompatActivity
                 }
                 String toSend = obj.toString();
                 Log.d("web", "Sending: " +toSend);
-                ws.send(toSend);
+//                ws.send(toSend);
 
                 Location playerLoc = new Location("");
                 playerLoc.setLatitude(playerLat);

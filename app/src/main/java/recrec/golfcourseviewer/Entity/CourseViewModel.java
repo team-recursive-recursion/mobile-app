@@ -14,16 +14,15 @@ import android.support.annotation.NonNull;
 
 import java.util.List;
 
-import recrec.golfcourseviewer.Requests.Response.Course;
 import recrec.golfcourseviewer.Requests.Response.Hole;
 import recrec.golfcourseviewer.Requests.Response.Point;
 import recrec.golfcourseviewer.Requests.Response.PolygonElement;
-import recrec.golfcourseviewer.db.AppDatabase;
+import recrec.golfcourseviewer.Requests.Response.Zone;
 
 public class CourseViewModel extends AndroidViewModel {
 
-    public MutableLiveData<List<Course>> courses = new MutableLiveData<>();
-    public MutableLiveData<List<Hole>> holes = new MutableLiveData<>();
+    public MutableLiveData<List<Zone>> courses = new MutableLiveData<>();
+    public MutableLiveData<List<Zone>> holes = new MutableLiveData<>();
     public MutableLiveData<String> courseID = new MutableLiveData<>();
     public MutableLiveData<String> holeID = new MutableLiveData<>();
 

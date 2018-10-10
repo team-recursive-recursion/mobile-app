@@ -27,17 +27,15 @@ import android.view.ViewGroup;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import recrec.golfcourseviewer.Activity.MainActivity;
 import recrec.golfcourseviewer.Adapter.MyGolfCourseListRecyclerViewAdapter;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.ApiClientRF;
-import recrec.golfcourseviewer.Requests.Response.Course;
+import recrec.golfcourseviewer.Requests.Response.Zone;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -71,7 +69,7 @@ public class GolfCourseListFragment extends Fragment {
 
     MyGolfCourseListRecyclerViewAdapter adapter;
     CourseViewModel courseViewModel;
-    ArrayList<Course> courseModels = new ArrayList<>();
+    ArrayList<Zone> zoneModels = new ArrayList<>();
     FusedLocationProviderClient mFusedLocationClient;
 
     @Override
@@ -101,20 +99,20 @@ public class GolfCourseListFragment extends Fragment {
                 });
 
         ApiClientRF client  = ServiceGenerator.getService();
-        Call<List<Course>> call = client.getCoursesWithLocation(latLon[0], latLon[1]);
+        Call<List<Zone>> call = client.getZones();
         subscribeAdapter();
 
-        call.enqueue(new Callback<List<Course>>() {
+        call.enqueue(new Callback<List<Zone>>() {
             @Override
-            public void onResponse(Call<List<Course>> call, Response<List<Course>> response) {
+            public void onResponse(Call<List<Zone>> call, Response<List<Zone>> response) {
                 if(response.isSuccessful()){
-                    Log.d("CoursesCall", response.body().get(0).getCourseName());
+                    Log.d("CoursesCall", response.body().get(0).getZoneName());
                     courseViewModel.courses.setValue(response.body());
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Course>> call, Throwable t) {
+            public void onFailure(Call<List<Zone>> call, Throwable t) {
                 Log.d("CoursesCall","Call to getCourse failed: " + t.getMessage());
             }
         });
@@ -128,17 +126,17 @@ public class GolfCourseListFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            adapter = new MyGolfCourseListRecyclerViewAdapter(courseModels,courseViewModel);
+            adapter = new MyGolfCourseListRecyclerViewAdapter(zoneModels,courseViewModel);
             recyclerView.setAdapter(adapter);
         }
         return view;
     }
 
     private void subscribeAdapter(){
-        courseViewModel.courses.observe(this, new Observer<List<Course>>() {
+        courseViewModel.courses.observe(this, new Observer<List<Zone>>() {
             @Override
-            public void onChanged(@Nullable List<Course> courses) {
-                Log.d("Hey",courses.get(0).getCourseId());
+            public void onChanged(@Nullable List<Zone> courses) {
+                Log.d("Hey",courses.get(0).getZoneName());
                 adapter.mValues =  courses;
                 adapter.notifyDataSetChanged();
             }

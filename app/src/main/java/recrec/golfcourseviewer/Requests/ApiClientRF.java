@@ -16,12 +16,12 @@ public interface ApiClientRF {
     @GET("api/Zones")
     Call<List<Zone>> getZones();
 
+    @GET("api/Zones/{ZoneID}")
+    Call<Zone> getZones(@Path("ZoneID") String zoneID);
+
     @GET("api/courses")
     Call<List<Zone>> getCoursesWithLocation(@Query("latVal") double latVal,
                                               @Query("lonVal") double lonVal);
-
-    @GET("api/courses/{courseId}/holes")
-    Call<List<Hole>> getHolesByCourseId(@Path("courseId") String courseId);
 
     @GET("api/courses/{courseId}/polygons")
     Call<List<PolygonElement>> getCourseElementsById(@Path("courseId") String courseId);
