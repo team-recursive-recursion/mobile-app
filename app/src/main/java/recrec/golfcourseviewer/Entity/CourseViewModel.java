@@ -30,7 +30,7 @@ public class CourseViewModel extends AndroidViewModel {
     public MutableLiveData<Boolean> coursePointCallResponded = new MutableLiveData<>();
     public MutableLiveData<Boolean> holeCallResponded = new MutableLiveData<>();
     public MutableLiveData<Boolean> courseCallResponded = new MutableLiveData<>();
-    public MutableLiveData<List<PolygonElement>> holesPolygons = new MutableLiveData<>();
+    public MutableLiveData<List<Zone>> zoneList = new MutableLiveData<>();
     public MutableLiveData<List<Point>> pointsPolygons = new
             MutableLiveData<>();
 
