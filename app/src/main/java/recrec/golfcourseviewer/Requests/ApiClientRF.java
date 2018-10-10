@@ -2,10 +2,10 @@ package recrec.golfcourseviewer.Requests;
 
 import java.util.List;
 
-import recrec.golfcourseviewer.Requests.Response.Course;
 import recrec.golfcourseviewer.Requests.Response.Point;
 import recrec.golfcourseviewer.Requests.Response.Hole;
 import recrec.golfcourseviewer.Requests.Response.PolygonElement;
+import recrec.golfcourseviewer.Requests.Response.Zone;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
@@ -13,11 +13,11 @@ import retrofit2.http.Query;
 
 public interface ApiClientRF {
 
-    @GET("api/courses")
-    Call<List<Course>> getCourses();
+    @GET("api/Zones")
+    Call<List<Zone>> getZones();
 
     @GET("api/courses")
-    Call<List<Course>> getCoursesWithLocation(@Query("latVal") double latVal,
+    Call<List<Zone>> getCoursesWithLocation(@Query("latVal") double latVal,
                                               @Query("lonVal") double lonVal);
 
     @GET("api/courses/{courseId}/holes")
