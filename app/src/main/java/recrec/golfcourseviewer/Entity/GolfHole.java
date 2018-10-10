@@ -38,10 +38,6 @@ public class GolfHole {
      *     for different types of coursePolygons.
      *++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
     public void drawHole(Resources res, GoogleMap map) {
-        // Delete previously drawn Holes
-        for(Polygon p : allPolygons){
-            p.remove();
-        }
         // Draw the course polygons
         for (GolfPolygon poly : coursePolygons) {
             // draw the polygon

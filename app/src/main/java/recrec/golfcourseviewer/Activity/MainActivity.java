@@ -131,7 +131,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 if (map != null) {
                     if (ActivityCompat.checkSelfPermission(getApplicationContext(),
-                            Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                            PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions
                                 ((Activity) getApplicationContext(),
                                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
@@ -146,10 +147,12 @@ public class MainActivity extends AppCompatActivity
         });
 
         //When Hole call is finished
-        golfCourseListViewModel.holeCallResponded.observe(this, new Observer<Boolean>() {
+        golfCourseListViewModel.holeCallResponded.observe(this,
+                new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
-                Boolean courseState = golfCourseListViewModel.courseCallResponded.getValue();
+                Boolean courseState = golfCourseListViewModel
+                        .courseCallResponded.getValue();
                 if(aBoolean != null && courseState != null){
                     if( aBoolean && courseState){
                         if(map != null){
@@ -161,10 +164,12 @@ public class MainActivity extends AppCompatActivity
         });
 
         //When course call is finished
-        golfCourseListViewModel.courseCallResponded.observe(this, new Observer<Boolean>() {
+        golfCourseListViewModel.courseCallResponded.observe(this,
+                new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
-                Boolean holeState = golfCourseListViewModel.holeCallResponded.getValue();
+                Boolean holeState = golfCourseListViewModel
+                        .holeCallResponded.getValue();
                 if(aBoolean != null && holeState != null){
                     if( aBoolean && holeState){
                         if(map != null){
@@ -176,10 +181,12 @@ public class MainActivity extends AppCompatActivity
         });
 
         //Course Marker call
-        golfCourseListViewModel.coursePointCallResponded.observe(this, new Observer<Boolean>() {
+        golfCourseListViewModel.coursePointCallResponded.observe(this,
+                new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
-                Boolean holeState = golfCourseListViewModel.coursePointCallResponded.getValue();
+                Boolean holeState = golfCourseListViewModel
+                        .coursePointCallResponded.getValue();
                 if(aBoolean != null && holeState != null){
                     if( aBoolean && holeState){
                         if(map != null){
@@ -192,10 +199,12 @@ public class MainActivity extends AppCompatActivity
 
 
         //point call is finished
-        golfCourseListViewModel.pointCallResponded.observe(this, new Observer<Boolean>() {
+        golfCourseListViewModel.pointCallResponded.observe(this,
+                new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean aBoolean) {
-                Boolean holeState = golfCourseListViewModel.pointCallResponded.getValue();
+                Boolean holeState = golfCourseListViewModel
+                        .pointCallResponded.getValue();
                 if(aBoolean != null && holeState != null){
                     if( aBoolean && holeState){
                         if(map != null){
@@ -218,7 +227,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onResponse(@NonNull Call<List<PolygonElement>> call,
                                    @NonNull Response<List<PolygonElement>> response) {
-                if(response.body() != null){
+                if(response.isSuccessful()){
                     for(PolygonElement poly : response.body()){
                         try {
                             holeFromResponse(poly, course);
@@ -231,18 +240,19 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<PolygonElement>> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<List<PolygonElement>> call,
+                                  @NonNull Throwable t) {
                 Log.d("Course Call", "Fail: " + t.getMessage());
                 golfCourseListViewModel.courseCallResponded.setValue(false);
             }
         });
 
-        Call<List<Point>> callCoursePoint = client.getCoursePointElementById(golfCourseListViewModel
-                .courseID.getValue());
+        Call<List<Point>> callCoursePoint = client.getCoursePointElementById(
+                golfCourseListViewModel.courseID.getValue());
         callCoursePoint.enqueue(new Callback<List<Point>>() {
             @Override
-            public void onResponse(@NonNull Call<List<Point>> call, @NonNull Response<List<Point>> response) {
-                point.resetMultiPoints();
+            public void onResponse(@NonNull Call<List<Point>> call,
+                                   @NonNull Response<List<Point>> response) {
                 for(Point poly : response.body()){
                     try {
                         pointFromResponse(poly);
@@ -254,18 +264,20 @@ public class MainActivity extends AppCompatActivity
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<Point>> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<List<Point>> call,
+                                  @NonNull Throwable t) {
                 Log.d("Point Course Call", "Fail: " + t.getMessage());
                 golfCourseListViewModel.coursePointCallResponded.setValue(false);
             }
         });
 
 
-        Call<List<PolygonElement>> callHole = client.getHoleElementsById(golfCourseListViewModel.holeID.getValue());
+        Call<List<PolygonElement>> callHole = client.getHoleElementsById(
+                golfCourseListViewModel.holeID.getValue());
         callHole.enqueue(new Callback<List<PolygonElement>>() {
             @Override
             public void onResponse(@NonNull Call<List<PolygonElement>> call, @NonNull Response<List<PolygonElement>> response) {
-                if(response.body() != null){
+                if(response.isSuccessful()){
                     course.resetHolePolygons();
                     for(PolygonElement poly : response.body()){
                         try {
@@ -288,12 +300,12 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        Call<List<Point>> callPoint = client.getPointElementsById(golfCourseListViewModel
-                .holeID.getValue());
+        Call<List<Point>> callPoint = client.getPointElementsById(
+                golfCourseListViewModel.holeID.getValue());
         callPoint.enqueue(new Callback<List<Point>>() {
             @Override
-            public void onResponse(@NonNull Call<List<Point>> call, @NonNull Response<List<Point>> response) {
-                point.resetMultiPoints();
+            public void onResponse(@NonNull Call<List<Point>> call,
+                                   @NonNull Response<List<Point>> response) {
                 for(Point poly : response.body()){
                     try {
                         pointFromResponse(poly);
@@ -355,16 +367,12 @@ public class MainActivity extends AppCompatActivity
             break;
         }
 
-       // point.addPoint(newPoint);
-        //here
         String id = resp.getHoleId();
         if (id == null){
             point.addCoursePoint(newPoint);
         }else{
             point.addHolePoint(newPoint);
         }
-
-
     }
 
     private void holeFromResponse(PolygonElement resp, GolfHole hole) throws Exception
@@ -451,7 +459,8 @@ public class MainActivity extends AppCompatActivity
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         t = new HandlerThread("myHandlerThread");
         t.start();
-        mFusedLocationClient.requestLocationUpdates(mLocationRequest, locationCallback, t.getLooper());
+        mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                locationCallback, t.getLooper());
 
     }
 

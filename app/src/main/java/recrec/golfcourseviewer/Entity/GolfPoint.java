@@ -24,14 +24,6 @@ public class GolfPoint {
 
     public String getType(){return type;}
 
-    public void setLatitude(double lat) {
-        this.lat = lat;
-    }
-
-    public void setLongitude(double lon) {
-        this.lon = lon;
-    }
-
     public void setInfo(String s){this.info = s;}
 
     public void setType(String s){this.type = s;}

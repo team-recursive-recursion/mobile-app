@@ -107,7 +107,7 @@ public class GolfCourseListFragment extends Fragment {
         call.enqueue(new Callback<List<Course>>() {
             @Override
             public void onResponse(Call<List<Course>> call, Response<List<Course>> response) {
-                if(!response.body().isEmpty()){
+                if(response.isSuccessful()){
                     Log.d("CoursesCall", response.body().get(0).getCourseName());
                     courseViewModel.courses.setValue(response.body());
                 }
