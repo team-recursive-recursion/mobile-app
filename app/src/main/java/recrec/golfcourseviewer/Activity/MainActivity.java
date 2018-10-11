@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Handler;
 import android.os.HandlerThread;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -119,7 +120,8 @@ public class MainActivity extends AppCompatActivity
 
         //When hole is chosen
         final OnMapReadyCallback mcb = this;
-        golfCourseListViewModel.holeID.observe(this, new Observer<String>() {
+        golfCourseListViewModel.
+                holeID.observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 createCourse(hole);
@@ -149,6 +151,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+
         golfCourseListViewModel.zoneList.observe(this, new Observer<List<Zone>>() {
             @Override
             public void onChanged(@Nullable List<Zone> zones) {
@@ -156,7 +159,7 @@ public class MainActivity extends AppCompatActivity
 
                 drawer.addZoneCollection(zones);
                 try {
-                    drawer.drawElements(map);
+                    drawer.drawElements(getResources(),map);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -175,29 +178,37 @@ public class MainActivity extends AppCompatActivity
     private void createCourse(final GolfHole course)
     {
         final ArrayList<Zone> fullHoleList = new ArrayList<>();
-        ApiClientRF client = ServiceGenerator.getService();
+        final ApiClientRF client = ServiceGenerator.getService();
 
         List<Zone> innerZoneList = golfCourseListViewModel.holes.getValue();
         final int numHoles = innerZoneList.size();
         final int count[] = new int[1];
         count[0] =  0;
-        for(Zone hole : innerZoneList){
-            Call<Zone> call = client.getZones(hole.getZoneID());
-            call.enqueue(new Callback<Zone>() {
-                @Override
-                public void onResponse(Call<Zone> call, Response<Zone> response) {
-                    fullHoleList.add(response.body());
-                    count[0]++;
-                    if(count[0] == numHoles){
-                        golfCourseListViewModel.zoneList.setValue(fullHoleList);
-                    }
-                }
+        for(final Zone hole : innerZoneList){
 
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
                 @Override
-                public void onFailure(Call<Zone> call, Throwable t) {
-                    count[0]++;
+                public void run() {
+                    Call<Zone> call = client.getZones(hole.getZoneID());
+                    call.enqueue(new Callback<Zone>() {
+                        @Override
+                        public void onResponse(Call<Zone> call, Response<Zone> response) {
+                            fullHoleList.add(response.body());
+                            count[0]++;
+                            if(count[0] == numHoles){
+                                golfCourseListViewModel.zoneList.setValue(fullHoleList);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<Zone> call, Throwable t) {
+                            count[0]++;
+                        }
+                    });
                 }
-            });
+            }, 1000);
+
         }
 
     }
