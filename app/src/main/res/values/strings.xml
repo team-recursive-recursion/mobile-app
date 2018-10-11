@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Golf Course Viewer</string>
+    <string name="app_name">Golfer\'s Guide</string>
     <string name="google_maps_key">AIzaSyBnbeKYeCMSTPhkws7du0gvv_eSEp02Kog</string>
     <string name="button_view_courses">Courses</string>
     <string name="button_view_map">Map</string>
