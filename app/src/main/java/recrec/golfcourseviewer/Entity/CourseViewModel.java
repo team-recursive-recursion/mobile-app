@@ -20,6 +20,7 @@ import recrec.golfcourseviewer.Requests.Response.Element;
 public class CourseViewModel extends AndroidViewModel {
 
     public MutableLiveData<List<Zone>> courses = new MutableLiveData<>();
+    public MutableLiveData<Zone> courseZone = new MutableLiveData<>();
     public MutableLiveData<List<Zone>> holes = new MutableLiveData<>();
     public MutableLiveData<String> courseID = new MutableLiveData<>();
     public MutableLiveData<String> holeID = new MutableLiveData<>();

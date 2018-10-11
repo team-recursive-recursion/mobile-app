@@ -86,6 +86,7 @@ public class HolesListFragment extends Fragment {
             public void onResponse(Call<Zone> call, Response<Zone> response) {
                 if(response.body() != null){
                     courseViewModel.holes.setValue(response.body().getInnerZones());
+                    courseViewModel.courseZone.setValue(response.body());
                     Log.d("Hole", response.body().getZoneName());
                 }
             }

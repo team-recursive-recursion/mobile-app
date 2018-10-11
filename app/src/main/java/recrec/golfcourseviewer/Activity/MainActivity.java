@@ -164,10 +164,10 @@ public class MainActivity extends AppCompatActivity
 
         });
 
-        golfCourseListViewModel.courses.observe(this, new Observer<List<Zone>>() {
+        golfCourseListViewModel.courseZone.observe(this, new Observer<Zone>() {
             @Override
-            public void onChanged(@Nullable List<Zone> list) {
-                drawer.addZones(list);
+            public void onChanged(@Nullable Zone zone) {
+                drawer.addZone(zone);
             }
         });
     }

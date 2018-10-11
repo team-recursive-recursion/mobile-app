@@ -20,21 +20,21 @@ import recrec.golfcourseviewer.Requests.Response.Zone;
 public class ElementDrawer {
 
     private List<Zone> zonesCollection;
-    private List<Zone> courseElements;
+    private Zone courseZone;
 
     public ElementDrawer(){
     }
 
     public void addZoneCollection(List<Zone> list){
         zonesCollection = list;
-        if(courseElements != null){
-            zonesCollection.addAll(courseElements);
-            courseElements = null;
+        if(courseZone != null){
+            zonesCollection.add(courseZone);
+            courseZone = null;
         }
     }
 
-    public void addZones(List<Zone> zoneList){
-        courseElements = zoneList;
+    public void addZone(Zone zoneList){
+        courseZone = zoneList;
     }
 
     public void drawElements() throws Exception{
