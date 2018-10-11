@@ -45,6 +45,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
+import recrec.golfcourseviewer.Entity.ElementDrawer;
 import recrec.golfcourseviewer.Entity.GolfInfoPoint;
 import recrec.golfcourseviewer.Entity.GolfPoint;
 import recrec.golfcourseviewer.Fragments.GolfCourseListFragment;
@@ -82,6 +83,7 @@ public class MainActivity extends AppCompatActivity
 
     public static double playerLat;
     public static double playerLon;
+    ElementDrawer drawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +104,7 @@ public class MainActivity extends AppCompatActivity
 
         hole = new GolfHole();
         point = new GolfInfoPoint();
-
+        drawer = new ElementDrawer();
     }
 
 
@@ -144,7 +146,6 @@ public class MainActivity extends AppCompatActivity
                                 (mLocationRequest, locationCallback, t.getLooper());
                     }
                 }
-
             }
         });
 
@@ -152,6 +153,21 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onChanged(@Nullable List<Zone> zones) {
                 Log.d("Zone", Integer.toString(zones.size()));
+
+                drawer.addZoneCollection(zones);
+                try {
+                    drawer.drawElements();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        });
+
+        golfCourseListViewModel.courses.observe(this, new Observer<List<Zone>>() {
+            @Override
+            public void onChanged(@Nullable List<Zone> list) {
+                drawer.addZones(list);
             }
         });
     }

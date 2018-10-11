@@ -1,8 +1,11 @@
 package recrec.golfcourseviewer.Entity;
 
+import android.app.Application;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.Observer;
+import android.content.Context;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,23 +18,23 @@ import java.util.List;
 import recrec.golfcourseviewer.Requests.Response.Zone;
 
 public class ElementDrawer {
-    public CourseViewModel golfCourseListViewModel;
 
     private List<Zone> zonesCollection;
+    private List<Zone> courseElements;
 
-    ElementDrawer(CourseViewModel model,LifecycleOwner own){
-        golfCourseListViewModel = model;
-        golfCourseListViewModel.zoneList.observe(own, new Observer<List<Zone>>() {
-            @Override
-            public void onChanged(@Nullable List<Zone> zones) {
-               zonesCollection =  golfCourseListViewModel.zoneList.getValue();
-            }
-        });
+    public ElementDrawer(){
+    }
 
+    public void addZoneCollection(List<Zone> list){
+        zonesCollection = list;
+        if(courseElements != null){
+            zonesCollection.addAll(courseElements);
+            courseElements = null;
+        }
     }
 
     public void addZones(List<Zone> zoneList){
-        zonesCollection.addAll(zoneList);
+        courseElements = zoneList;
     }
 
     public void drawElements() throws Exception{

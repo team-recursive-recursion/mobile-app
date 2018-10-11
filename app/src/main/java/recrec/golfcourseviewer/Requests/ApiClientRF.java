@@ -2,9 +2,6 @@ package recrec.golfcourseviewer.Requests;
 
 import java.util.List;
 
-import recrec.golfcourseviewer.Requests.Response.Point;
-import recrec.golfcourseviewer.Requests.Response.Hole;
-import recrec.golfcourseviewer.Requests.Response.PolygonElement;
 import recrec.golfcourseviewer.Requests.Response.Zone;
 import retrofit2.Call;
 import retrofit2.http.GET;
