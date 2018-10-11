@@ -6,11 +6,8 @@ public class Element {
     private String zoneID;
     private Zone zone;
     private int elementType;
-    private String raw;
     private int classType;
     private String info;
-    private String createdAt;
-    private String updatedAt;
 
 
     public String getGeoJson() {
@@ -33,9 +30,6 @@ public class Element {
         return elementType;
     }
 
-    public String getRaw() {
-        return raw;
-    }
 
     public int getClassType() {
         return classType;
@@ -45,11 +39,4 @@ public class Element {
         return info;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
 }
