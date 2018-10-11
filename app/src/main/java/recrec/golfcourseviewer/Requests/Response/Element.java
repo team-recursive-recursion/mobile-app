@@ -1,6 +1,6 @@
 package recrec.golfcourseviewer.Requests.Response;
 
-class Element {
+public class Element {
     private String geoJson;
     private String elementId;
     private String zoneID;

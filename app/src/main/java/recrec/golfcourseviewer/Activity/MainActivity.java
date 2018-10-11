@@ -38,6 +38,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -56,6 +57,7 @@ import recrec.golfcourseviewer.Requests.ApiClientRF;
 import recrec.golfcourseviewer.Requests.EchoWebSocketListener;
 import recrec.golfcourseviewer.Requests.Response.Point;
 import recrec.golfcourseviewer.Requests.Response.PolygonElement;
+import recrec.golfcourseviewer.Requests.Response.Zone;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
 
 import retrofit2.Call;
@@ -146,187 +148,41 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        //When Hole call is finished
-        golfCourseListViewModel.holeCallResponded.observe(this,
-                new Observer<Boolean>() {
+        golfCourseListViewModel.zoneList.observe(this, new Observer<List<Zone>>() {
             @Override
-            public void onChanged(@Nullable Boolean aBoolean) {
-                Boolean courseState = golfCourseListViewModel
-                        .courseCallResponded.getValue();
-                if(aBoolean != null && courseState != null){
-                    if( aBoolean && courseState){
-                        if(map != null){
-                            hole.drawHole(getResources(), map);
-                        }
-                    }
-                }
+            public void onChanged(@Nullable List<Zone> zones) {
+                Log.d("Zone", Integer.toString(zones.size()));
             }
         });
-
-        //When course call is finished
-        golfCourseListViewModel.courseCallResponded.observe(this,
-                new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean aBoolean) {
-                Boolean holeState = golfCourseListViewModel
-                        .holeCallResponded.getValue();
-                if(aBoolean != null && holeState != null){
-                    if( aBoolean && holeState){
-                        if(map != null){
-                            hole.drawHole(getResources(), map);
-                        }
-                    }
-                }
-            }
-        });
-
-        //Course Marker call
-        golfCourseListViewModel.coursePointCallResponded.observe(this,
-                new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean aBoolean) {
-                Boolean holeState = golfCourseListViewModel
-                        .coursePointCallResponded.getValue();
-                if(aBoolean != null && holeState != null){
-                    if( aBoolean && holeState){
-                        if(map != null){
-                            point.drawInfoPoint(getResources(), map);
-                        }
-                    }
-                }
-            }
-        });
-
-
-        //point call is finished
-        golfCourseListViewModel.pointCallResponded.observe(this,
-                new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean aBoolean) {
-                Boolean holeState = golfCourseListViewModel
-                        .pointCallResponded.getValue();
-                if(aBoolean != null && holeState != null){
-                    if( aBoolean && holeState){
-                        if(map != null){
-                            point.drawInfoPoint(getResources(), map);
-                        }
-                    }
-                }
-            }
-        });
-
     }
 
     private void createCourse(final GolfHole course)
     {
+        final ArrayList<Zone> fullHoleList = new ArrayList<>();
         ApiClientRF client = ServiceGenerator.getService();
-        Call<List<PolygonElement>> callCourse = client
-                .getCourseElementsById(golfCourseListViewModel.courseID.getValue());
 
-        callCourse.enqueue(new Callback<List<PolygonElement>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<PolygonElement>> call,
-                                   @NonNull Response<List<PolygonElement>> response) {
-                if(response.isSuccessful()){
-                    for(PolygonElement poly : response.body()){
-                        try {
-                            holeFromResponse(poly, course);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+        List<Zone> innerZoneList = golfCourseListViewModel.holes.getValue();
+        final int numHoles = innerZoneList.size();
+        final int count[] = new int[1];
+        count[0] =  0;
+        for(Zone hole : innerZoneList){
+            Call<Zone> call = client.getZones(hole.getZoneID());
+            call.enqueue(new Callback<Zone>() {
+                @Override
+                public void onResponse(Call<Zone> call, Response<Zone> response) {
+                    fullHoleList.add(response.body());
+                    count[0]++;
+                    if(count[0] == numHoles){
+                        golfCourseListViewModel.zoneList.setValue(fullHoleList);
                     }
                 }
-                golfCourseListViewModel.courseCallResponded.setValue(true);
-            }
 
-            @Override
-            public void onFailure(@NonNull Call<List<PolygonElement>> call,
-                                  @NonNull Throwable t) {
-                Log.d("Course Call", "Fail: " + t.getMessage());
-                golfCourseListViewModel.courseCallResponded.setValue(false);
-            }
-        });
-
-        Call<List<Point>> callCoursePoint = client.getCoursePointElementById(
-                golfCourseListViewModel.courseID.getValue());
-        callCoursePoint.enqueue(new Callback<List<Point>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<Point>> call,
-                                   @NonNull Response<List<Point>> response) {
-                for(Point poly : response.body()){
-                    try {
-                        pointFromResponse(poly);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                @Override
+                public void onFailure(Call<Zone> call, Throwable t) {
+                    count[0]++;
                 }
-                golfCourseListViewModel.coursePointCallResponded.setValue(true);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<List<Point>> call,
-                                  @NonNull Throwable t) {
-                Log.d("Point Course Call", "Fail: " + t.getMessage());
-                golfCourseListViewModel.coursePointCallResponded.setValue(false);
-            }
-        });
-
-
-        Call<List<PolygonElement>> callHole = client.getHoleElementsById(
-                golfCourseListViewModel.holeID.getValue());
-        callHole.enqueue(new Callback<List<PolygonElement>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<PolygonElement>> call,
-                        @NonNull Response<List<PolygonElement>> response) {
-                if(response.isSuccessful()){
-                    course.resetHolePolygons();
-                    for(PolygonElement poly : response.body()){
-                        try {
-                            golfCourseListViewModel.holesPolygons.setValue(response.body());
-                            holeFromResponse(poly, course);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    golfCourseListViewModel.holeCallResponded.setValue(true);
-                    centerOnHole(golfCourseListViewModel.holeID.getValue());
-                }
-
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<List<PolygonElement>> call,
-                                  @NonNull Throwable t) {
-                Log.d("Hole Call", "Fail: " + t.getMessage());
-                golfCourseListViewModel.holeCallResponded.setValue(false);
-            }
-        });
-
-        Call<List<Point>> callPoint = client.getPointElementsById(
-                golfCourseListViewModel.holeID.getValue());
-        callPoint.enqueue(new Callback<List<Point>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<Point>> call,
-                                   @NonNull Response<List<Point>> response) {
-                for(Point poly : response.body()){
-                    try {
-                        pointFromResponse(poly);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                golfCourseListViewModel.pointsPolygons.setValue(response.body());
-                golfCourseListViewModel.pointCallResponded.setValue(true);
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<List<Point>> call,
-                                  @NonNull Throwable t) {
-                Log.d("Point Call", "Fail: " + t.getMessage());
-                golfCourseListViewModel.pointCallResponded.setValue(false);
-            }
-        });
-
+            });
+        }
 
     }
 
@@ -585,34 +441,34 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void centerOnHole(String holeId){
-        if (map != null) {
-            try{
-                List<PolygonElement> holes = golfCourseListViewModel.holesPolygons.getValue();
-                String holeGeoJson = "";
-                if(holes.isEmpty()) return;
-                for(PolygonElement h : holes){
-                    if(h.getHoleId().equals(holeId)){
-                        holeGeoJson = h.getGeoJson();
-                        break;
-                    }
-                }
-                if(!holeGeoJson.equals("")){
-                    JSONObject geoJsonObject = new JSONObject(holeGeoJson);
-                    JSONArray coordinates = geoJsonObject
-                            .getJSONArray("coordinates").getJSONArray(0)
-                            .getJSONArray(0);
-                    double lat = coordinates.getDouble(1);
-                    double lon = coordinates.getDouble(0);
-                    LatLng coordinatesLL = new LatLng(lat, lon);
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinatesLL, 17f));
-                }
-
-            }catch (JSONException e){
-                e.printStackTrace();
-            }
-        }
-    }
+//    private void centerOnHole(String holeId){
+//        if (map != null) {
+//            try{
+//                List<PolygonElement> holes = golfCourseListViewModel.holesPolygons.getValue();
+//                String holeGeoJson = "";
+//                if(holes.isEmpty()) return;
+//                for(PolygonElement h : holes){
+//                    if(h.getHoleId().equals(holeId)){
+//                        holeGeoJson = h.getGeoJson();
+//                        break;
+//                    }
+//                }
+//                if(!holeGeoJson.equals("")){
+//                    JSONObject geoJsonObject = new JSONObject(holeGeoJson);
+//                    JSONArray coordinates = geoJsonObject
+//                            .getJSONArray("coordinates").getJSONArray(0)
+//                            .getJSONArray(0);
+//                    double lat = coordinates.getDouble(1);
+//                    double lon = coordinates.getDouble(0);
+//                    LatLng coordinatesLL = new LatLng(lat, lon);
+//                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinatesLL, 17f));
+//                }
+//
+//            }catch (JSONException e){
+//                e.printStackTrace();
+//            }
+//        }
+//    }
     /*--------------------------------------------------------------------------
      * showInputDialog()
      *

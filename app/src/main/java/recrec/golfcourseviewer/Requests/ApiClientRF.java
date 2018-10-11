@@ -23,15 +23,4 @@ public interface ApiClientRF {
     Call<List<Zone>> getCoursesWithLocation(@Query("latVal") double latVal,
                                               @Query("lonVal") double lonVal);
 
-    @GET("api/courses/{courseId}/polygons")
-    Call<List<PolygonElement>> getCourseElementsById(@Path("courseId") String courseId);
-
-    @GET("api/holes/{holeId}/polygons")
-    Call<List<PolygonElement>> getHoleElementsById(@Path("holeId") String holeId);
-
-    @GET("api/holes/{holeId}/points")
-    Call<List<Point>> getPointElementsById(@Path("holeId") String holeId);
-
-    @GET("api/courses/{courseId}/points")
-    Call<List<Point>> getCoursePointElementById(@Path("courseId") String courseId);
 }
