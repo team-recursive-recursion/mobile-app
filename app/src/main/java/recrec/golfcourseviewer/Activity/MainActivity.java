@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity
 
                 drawer.addZoneCollection(zones);
                 try {
-                    drawer.drawElements();
+                    drawer.drawElements(map);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
