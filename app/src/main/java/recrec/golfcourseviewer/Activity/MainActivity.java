@@ -66,7 +66,7 @@ import retrofit2.Response;
 
 
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback,SearchView.OnQueryTextListener {
+        implements OnMapReadyCallback {
 
     private final int PERMISSION_REQUEST = 0;
 
@@ -102,25 +102,6 @@ public class MainActivity extends AppCompatActivity
         drawer = new ElementDrawer();
 
 
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();;
-        searchView.setOnQueryTextListener(this);
-        return true;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String query) {
-        Log.d("Query",query);
-        return false;
-    }
-
-    @Override
-    public boolean onQueryTextSubmit(String query) {
-        return false;
     }
 
     private void subscribe() {
@@ -267,6 +248,7 @@ public class MainActivity extends AppCompatActivity
                     PERMISSION_REQUEST);
         } else {
             map.setMyLocationEnabled(true);
+
             centerOnPlayer();
         }
 

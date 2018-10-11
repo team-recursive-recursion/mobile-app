@@ -12,21 +12,27 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
 import android.widget.TextView;
 
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.Response.Zone;
 
+import java.util.ArrayList;
 import java.util.List;
+
 public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<MyGolfCourseListRecyclerViewAdapter.ViewHolder> {
 
     public List<Zone> mValues;
+    public List<Zone> mFilter;
+
     private CourseViewModel courseVM;
 
     public MyGolfCourseListRecyclerViewAdapter(List<Zone> items, CourseViewModel courseListViewModel) {
         courseVM = courseListViewModel;
         mValues = items;
+        mFilter = items;
     }
 
     @Override
@@ -76,5 +82,46 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
             return super.toString() + " '" + mCourseNameView.getText() + "'";
         }
 
+    }
+
+
+    public Filter getFilter() {
+
+        Filter filter = new Filter() {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+
+                mValues = (List<Zone>) results.values;
+                notifyDataSetChanged();
+            }
+
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+
+                FilterResults results = new FilterResults();
+                ArrayList<Zone> filter = new ArrayList<>();
+                if (constraint.length() == 0 && filter.size() == 0) {
+                    filter.addAll(mFilter);
+                }else {
+                    constraint = constraint.toString().toLowerCase();
+                    for (int i = 0; i < mFilter.size(); i++) {
+                        String dataNames = mFilter.get(i).getZoneName();
+                        if (dataNames.toLowerCase().contains(constraint.toString())) {
+                            filter.add(mFilter.get(i));
+                        }
+                    }
+                }
+
+                results.count = filter.size();
+                results.values = filter;
+                Log.e("VALUES", results.values.toString());
+
+                return results;
+            }
+        };
+
+        return filter;
     }
 }

@@ -19,6 +19,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +32,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import recrec.golfcourseviewer.Activity.MainActivity;
 import recrec.golfcourseviewer.Adapter.MyGolfCourseListRecyclerViewAdapter;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
@@ -41,7 +43,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class GolfCourseListFragment extends Fragment {
+public class GolfCourseListFragment extends Fragment implements SearchView.OnQueryTextListener {
 
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
@@ -78,7 +80,8 @@ public class GolfCourseListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_golfcourselist_list, container, false);
         courseViewModel = ViewModelProviders.of(getActivity()).get(CourseViewModel.class);
-
+        SearchView searchView = view.findViewById(R.id.search_view);
+        searchView.setOnQueryTextListener(this);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         if (ActivityCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION) !=
@@ -140,6 +143,7 @@ public class GolfCourseListFragment extends Fragment {
                 Log.d("Hey", courses.get(0).getZoneName());
                 if (adapter != null) {
                     adapter.mValues = courses;
+                    adapter.mFilter = courses;
                     adapter.notifyDataSetChanged();
                 }
             }
@@ -156,4 +160,15 @@ public class GolfCourseListFragment extends Fragment {
         super.onDetach();
     }
 
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+       // this.adapter.getFilter().filter(query);
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        this.adapter.getFilter().filter(newText);
+        return false;
+    }
 }
