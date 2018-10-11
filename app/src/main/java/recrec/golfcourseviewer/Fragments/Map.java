@@ -89,6 +89,7 @@ public class Map extends Fragment {
                     }
                     curId = availableList.get(index).getZoneID();
                     vm.holeID.setValue(curId);
+
                 }
             }
         });

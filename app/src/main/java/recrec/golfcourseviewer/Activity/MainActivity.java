@@ -50,18 +50,13 @@ import okhttp3.Request;
 import okhttp3.WebSocket;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.Entity.ElementDrawer;
-import recrec.golfcourseviewer.Entity.GolfInfoPoint;
-import recrec.golfcourseviewer.Entity.GolfPoint;
 import recrec.golfcourseviewer.Fragments.GolfCourseListFragment;
 import recrec.golfcourseviewer.Fragments.HolesListFragment;
 import recrec.golfcourseviewer.Fragments.Map;
-import recrec.golfcourseviewer.Entity.GolfHole;
-import recrec.golfcourseviewer.Entity.GolfPolygon;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.ApiClientRF;
 import recrec.golfcourseviewer.Requests.EchoWebSocketListener;
-import recrec.golfcourseviewer.Requests.Response.Point;
-import recrec.golfcourseviewer.Requests.Response.PolygonElement;
+import recrec.golfcourseviewer.Requests.Response.Element;
 import recrec.golfcourseviewer.Requests.Response.Zone;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
 
@@ -76,8 +71,6 @@ public class MainActivity extends AppCompatActivity
     private final int PERMISSION_REQUEST = 0;
 
     private GoogleMap map;
-    private GolfHole hole;
-    private GolfInfoPoint point;
 
     private OkHttpClient client;
     private String hostAddress;
@@ -106,9 +99,6 @@ public class MainActivity extends AppCompatActivity
         sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(this);
         client = new OkHttpClient();
-
-        hole = new GolfHole();
-        point = new GolfInfoPoint();
         drawer = new ElementDrawer();
 
 
@@ -148,7 +138,7 @@ public class MainActivity extends AppCompatActivity
                 holeID.observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
-                createCourse(hole);
+                createCourse();
                 setFragment("Map");
                 // Get Map ready
                 if (map == null) {
@@ -170,6 +160,7 @@ public class MainActivity extends AppCompatActivity
                     }else{
                         mFusedLocationClient.requestLocationUpdates
                                 (mLocationRequest, locationCallback, t.getLooper());
+                        centerOnHole(s);
                     }
                 }
             }
@@ -197,9 +188,10 @@ public class MainActivity extends AppCompatActivity
                 drawer.addZone(zone);
             }
         });
+
     }
 
-    private void createCourse(final GolfHole course)
+    private void createCourse()
     {
         final ArrayList<Zone> fullHoleList = new ArrayList<>();
         final ApiClientRF client = ServiceGenerator.getService();
@@ -209,7 +201,6 @@ public class MainActivity extends AppCompatActivity
         final int count[] = new int[1];
         count[0] =  0;
         for(final Zone hole : innerZoneList){
-
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
@@ -251,88 +242,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void pointFromResponse(Point resp) throws Exception {
-        if (point == null){
-            point = new GolfInfoPoint();
-        }
-
-        String geoJson = resp.getGeoJson();
-        JSONObject geoJsonObject = new JSONObject(geoJson);
-
-        JSONArray coords = geoJsonObject.getJSONArray("coordinates");
-
-
-        double val1 = coords.getDouble(0);
-        double val2 = coords.getDouble(1);
-
-        GolfPoint newPoint = new GolfPoint(val1,val2);
-        newPoint.setInfo(resp.getInfo());
-
-        switch(resp.getPointType()){
-            case 0: newPoint.setType("Pin");
-            break;
-            case 1: newPoint.setType("Hole");
-            break;
-            case 2: newPoint.setType("Tee");
-            break;
-        }
-
-        String id = resp.getHoleId();
-        if (id == null){
-            point.addCoursePoint(newPoint);
-        }else{
-            point.addHolePoint(newPoint);
-        }
-    }
-
-    private void holeFromResponse(PolygonElement resp, GolfHole hole) throws Exception
-    {
-        if(hole == null){
-            hole = new GolfHole();
-        }
-        //Determine type
-        GolfPolygon.PolyType type;
-        switch (resp.getPolygonType()) {
-            case 0:
-                type = GolfPolygon.PolyType.TYPE_ROUGH;
-                break;
-            case 1:
-                type = GolfPolygon.PolyType.TYPE_FAIRWAY;
-                break;
-            case 2:
-                type = GolfPolygon.PolyType.TYPE_GREEN;
-                break;
-            case 3:
-                type = GolfPolygon.PolyType.TYPE_BUNKER;
-                break;
-            case 4:
-                type = GolfPolygon.PolyType.TYPE_WATER;
-                break;
-            default:
-                throw new Exception("The hole contains an invalid polygon type");
-        }
-
-        // create the polygon
-        GolfPolygon poly = new GolfPolygon(type);
-        String geoJson = resp.getGeoJson();
-        JSONObject geoJsonObject = new JSONObject(geoJson);
-
-        JSONArray coords = geoJsonObject.getJSONArray("coordinates")
-                .getJSONArray(0);
-        for (int j = 0; j < coords.length(); ++j) {
-            JSONArray pair = coords.getJSONArray(j);
-            double lat = pair.getDouble(1);
-            double lon = pair.getDouble(0);
-            poly.addPoint(lat, lon);
-        }
-        String id = resp.getHoleId();
-        if(id == null){
-            hole.addCoursePolygon(poly);
-        }else{
-            hole.addHolePolygon(poly);
-        }
-
-    }
 
     FusedLocationProviderClient mFusedLocationClient;
     LocationRequest mLocationRequest;
@@ -364,8 +273,8 @@ public class MainActivity extends AppCompatActivity
 //         Location handling and sending to web socket.
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mLocationRequest = LocationRequest.create();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(10000);
+        mLocationRequest.setInterval(1000);
+        mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         t = new HandlerThread("myHandlerThread");
         t.start();
@@ -381,6 +290,7 @@ public class MainActivity extends AppCompatActivity
             playerLon = locationResult.getLastLocation().getLongitude();
 
             try {
+                //Send player location over web socket
                 JSONObject obj = new JSONObject().put("Location",
                         new JSONObject().put("type","Point")
                                 .put("coordinates", new JSONArray
@@ -393,13 +303,12 @@ public class MainActivity extends AppCompatActivity
                 }
                 String toSend = obj.toString();
                 Log.d("web", "Sending: " +toSend);
-//                ws.send(toSend);
+                ws.send(toSend);
 
                 Location playerLoc = new Location("");
                 playerLoc.setLatitude(playerLat);
                 playerLoc.setLongitude(playerLon);
                 setDistanceToHole(playerLoc);
-
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -409,16 +318,25 @@ public class MainActivity extends AppCompatActivity
     };
 
     Location holeLoc = null;
-    public void setDistanceToHole(Location player){
-        List<Point> pointList = golfCourseListViewModel.pointsPolygons
-                .getValue();
+    public void setDistanceToHole(final Location player){
+        List<Zone> holeList = golfCourseListViewModel.zoneList.getValue();
         String holeId = golfCourseListViewModel.holeID.getValue();
-        String geoJSON = "";
-        if(pointList != null && holeId != null){
-            for(Point poly : pointList){
-                if(poly.getPointType() == POINTTYPE.HOLE.getType() && poly
-                        .getHoleId().equals(holeId)){
-                    geoJSON = poly.getGeoJson();
+        Zone currentHole = null;
+        if(holeList != null){
+            for(Zone z : holeList){
+                if(z.getZoneID().equals(holeId)){
+                    currentHole = z;
+                    break;
+                }
+            }
+        }
+        if(currentHole != null){
+            String geoJSON = "";
+            for(Element el : currentHole.getElements()){
+                //The element type of 1 means it is a point
+                if(el.getElementType() == 1 && el.getClassType() == POINTTYPE
+                        .HOLE.getType()){
+                    geoJSON = el.getGeoJson();
                     break;
                 }
             }
@@ -437,6 +355,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void run() {
                 golfCourseListViewModel.distanceToHole.setValue(distance);
+                golfCourseListViewModel.playerCurLoc.setValue(player);
             }
         });
 
@@ -492,34 +411,36 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-//    private void centerOnHole(String holeId){
-//        if (map != null) {
-//            try{
-//                List<PolygonElement> holes = golfCourseListViewModel.holesPolygons.getValue();
-//                String holeGeoJson = "";
-//                if(holes.isEmpty()) return;
-//                for(PolygonElement h : holes){
-//                    if(h.getHoleId().equals(holeId)){
-//                        holeGeoJson = h.getGeoJson();
-//                        break;
-//                    }
-//                }
-//                if(!holeGeoJson.equals("")){
-//                    JSONObject geoJsonObject = new JSONObject(holeGeoJson);
-//                    JSONArray coordinates = geoJsonObject
-//                            .getJSONArray("coordinates").getJSONArray(0)
-//                            .getJSONArray(0);
-//                    double lat = coordinates.getDouble(1);
-//                    double lon = coordinates.getDouble(0);
-//                    LatLng coordinatesLL = new LatLng(lat, lon);
-//                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinatesLL, 17f));
-//                }
-//
-//            }catch (JSONException e){
-//                e.printStackTrace();
-//            }
-//        }
-//    }
+    private void centerOnHole(String holeId){
+        if (map != null) {
+            try{
+                List<Zone> holes = golfCourseListViewModel.zoneList.getValue();
+                String holeGeoJson = "";
+                if(holes.isEmpty()) return;
+                for(Zone h : holes){
+                    if(h.getZoneID().equals(holeId) && h.getElements() != null){
+                        holeGeoJson = h.getElements().get(0).getGeoJson();
+                        break;
+                    }
+                }
+                if(!holeGeoJson.equals("")){
+                    JSONObject geoJsonObject = new JSONObject(holeGeoJson);
+                    JSONArray coordinates = geoJsonObject
+                            .getJSONArray("coordinates").getJSONArray(0)
+                            .getJSONArray(0);
+                    double lat = coordinates.getDouble(1);
+                    double lon = coordinates.getDouble(0);
+                    LatLng coordinatesLL = new LatLng(lat, lon);
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(coordinatesLL, 17f));
+                }
+
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
+            Location pl = golfCourseListViewModel.playerCurLoc.getValue();
+            setDistanceToHole(pl);
+        }
+    }
     /*--------------------------------------------------------------------------
      * showInputDialog()
      *

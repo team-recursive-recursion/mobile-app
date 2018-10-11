@@ -6,11 +6,7 @@ public class Zone {
     private String zoneID;
     private String zoneName;
     private String userId;
-    private String createdAt;
-    private String updatedAt;
     private String info	;
-    private String parentZoneID;
-    private String parentZone;
     private List<Zone> innerZones;
     private List<Element> elements;
 
@@ -26,24 +22,8 @@ public class Zone {
         return userId;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public String getUpdatedAt() {
-        return updatedAt;
-    }
-
     public String getInfo() {
         return info;
-    }
-
-    public String getParentZoneID() {
-        return parentZoneID;
-    }
-
-    public String getParentZone() {
-        return parentZone;
     }
 
     public List<Zone> getInnerZones() {
