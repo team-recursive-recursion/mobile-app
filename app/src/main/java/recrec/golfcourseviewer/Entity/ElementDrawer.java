@@ -59,12 +59,15 @@ public class ElementDrawer {
                     JSONObject geoJsonObject = new JSONObject(geoJson);
                     JSONArray coords = geoJsonObject.getJSONArray("coordinates")
                             .getJSONArray(0);
+                    PolygonOptions opt = new PolygonOptions();
                     for (int j = 0; j < coords.length(); ++j) {
                         JSONArray pair = coords.getJSONArray(j);
                         double lat = pair.getDouble(1);
                         double lon = pair.getDouble(0);
-                        PolygonOptions opt = new PolygonOptions();
+
                         opt.add(new LatLng(lat,lon));
+                    }
+
                         float zIndex;
                         switch(elem.getClassType()){
                             case 0: //TYPE_ROUGH
@@ -105,4 +108,4 @@ public class ElementDrawer {
 
         }
     }
-}
+
