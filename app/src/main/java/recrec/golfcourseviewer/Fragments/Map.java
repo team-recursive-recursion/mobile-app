@@ -18,6 +18,7 @@ import java.util.Locale;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.Response.Hole;
+import recrec.golfcourseviewer.Requests.Response.Zone;
 
 
 public class Map extends Fragment {
@@ -74,11 +75,11 @@ public class Map extends Fragment {
             @Override
             public void onClick(View v) {
                 String curId = vm.holeID.getValue();
-                List<Hole> availableList = vm.holes.getValue();
+                List<Zone> availableList = vm.holes.getValue();
                 int index = 0;
                 if(curId != null && availableList != null){
                     for(int i = 0; i < availableList.size(); i++){
-                        if(curId.equals(availableList.get(i).getHoleId())){
+                        if(curId.equals(availableList.get(i).getZoneID())){
                             index = i +1;
                             break;
                         }
@@ -86,8 +87,9 @@ public class Map extends Fragment {
                     if(index == availableList.size()){
                         index = 0;
                     }
-                    curId = availableList.get(index).getHoleId();
+                    curId = availableList.get(index).getZoneID();
                     vm.holeID.setValue(curId);
+
                 }
             }
         });

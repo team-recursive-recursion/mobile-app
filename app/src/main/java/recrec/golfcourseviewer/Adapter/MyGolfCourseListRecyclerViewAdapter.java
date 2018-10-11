@@ -16,15 +16,15 @@ import android.widget.TextView;
 
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
-import recrec.golfcourseviewer.Requests.Response.Course;
+import recrec.golfcourseviewer.Requests.Response.Zone;
 
 import java.util.List;
 public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<MyGolfCourseListRecyclerViewAdapter.ViewHolder> {
 
-    public List<Course> mValues;
+    public List<Zone> mValues;
     private CourseViewModel courseVM;
 
-    public MyGolfCourseListRecyclerViewAdapter(List<Course> items, CourseViewModel courseListViewModel) {
+    public MyGolfCourseListRecyclerViewAdapter(List<Zone> items, CourseViewModel courseListViewModel) {
         courseVM = courseListViewModel;
         mValues = items;
     }
@@ -39,8 +39,8 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mInfo.setText(mValues.get(position).getInfo());
-        holder.mItem = mValues.get(position).getCourseName();
-        holder.mCourseNameView.setText(mValues.get(position).getCourseName());
+        holder.mItem = mValues.get(position).getZoneName();
+        holder.mCourseNameView.setText(mValues.get(position).getZoneName());
 
     }
 
@@ -64,7 +64,7 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String courseID = mValues.get(getAdapterPosition()).getCourseId();
+                    String courseID = mValues.get(getAdapterPosition()).getZoneID();
                     c.courseID.setValue(courseID);
                     Log.d("Course clicked Id: ", courseID);
                 }

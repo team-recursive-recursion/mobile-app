@@ -11,6 +11,7 @@ import android.widget.TextView;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.Response.Hole;
+import recrec.golfcourseviewer.Requests.Response.Zone;
 
 import java.util.List;
 
@@ -20,17 +21,17 @@ import java.util.List;
  * TODO: Replace the implementation with code for your data type.
  */
 public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHolesListRecyclerViewAdapter.ViewHolder> {
-    private List<Hole> mValues;
+    private List<Zone> mValues;
     private CourseViewModel courseViewModel;
     private Context fragmentActivity;
 
-    public MyHolesListRecyclerViewAdapter(List<Hole> items, CourseViewModel
+    public MyHolesListRecyclerViewAdapter(List<Zone> items, CourseViewModel
             vm, Context ma) {
         mValues = items;
         courseViewModel = vm;
         fragmentActivity = ma;
     }
-    public void setmValues(List<Hole> mValues) {
+    public void setmValues(List<Zone> mValues) {
         this.mValues = mValues;
     }
 
@@ -44,7 +45,7 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mContentView.setText(mValues.get(position).getName());
+        holder.mContentView.setText(mValues.get(position).getZoneName());
         holder.mInfoView.setText(fragmentActivity.getString(R.string.par)
                 + mValues.get(position).getInfo());
 
@@ -61,7 +62,7 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
         final TextView mIdView;
         private final TextView mContentView;
         final TextView mInfoView;
-        Hole mItem;
+        Zone mItem;
 
         public ViewHolder(View view, final CourseViewModel vm) {
             super(view);
@@ -74,8 +75,8 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    vm.holeID.setValue(mItem.getHoleId());
-                    Log.d("Hole id: ",mItem.getHoleId());
+                    vm.holeID.setValue(mItem.getZoneID());
+                    Log.d("Hole id: ",mItem.getZoneID());
                 }
             });
         }

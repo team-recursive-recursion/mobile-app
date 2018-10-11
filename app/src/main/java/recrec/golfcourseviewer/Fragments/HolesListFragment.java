@@ -22,6 +22,7 @@ import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.ApiClientRF;
 import recrec.golfcourseviewer.Requests.Response.Hole;
+import recrec.golfcourseviewer.Requests.Response.Zone;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -68,7 +69,7 @@ public class HolesListFragment extends Fragment {
 
     MyHolesListRecyclerViewAdapter adapter;
     CourseViewModel courseViewModel;
-    List<Hole> holesList = new ArrayList<>();
+    List<Zone> holesList = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -78,19 +79,20 @@ public class HolesListFragment extends Fragment {
         subscribe();
 
         ApiClientRF clientRF = ServiceGenerator.getService();
-        Call<List<Hole>> call = clientRF.getHolesByCourseId(courseViewModel.courseID.getValue());
+        Call<Zone> call = clientRF.getZones(courseViewModel.courseID.getValue());
 
-        call.enqueue(new Callback<List<Hole>>() {
+        call.enqueue(new Callback<Zone>() {
             @Override
-            public void onResponse(Call<List<Hole>> call, Response<List<Hole>> response) {
-                if(!response.body().isEmpty()){
-                    courseViewModel.holes.setValue(response.body());
-                    Log.d("Hole", response.body().get(0).getName());
+            public void onResponse(Call<Zone> call, Response<Zone> response) {
+                if(response.body() != null){
+                    courseViewModel.holes.setValue(response.body().getInnerZones());
+                    courseViewModel.courseZone.setValue(response.body());
+                    Log.d("Hole", response.body().getZoneName());
                 }
             }
 
             @Override
-            public void onFailure(Call<List<Hole>> call, Throwable t) {
+            public void onFailure(Call<Zone> call, Throwable t) {
                 Log.d("Hole", "Failed: " + t.getMessage());
             }
         });
@@ -112,9 +114,9 @@ public class HolesListFragment extends Fragment {
     }
 
     private void subscribe(){
-        courseViewModel.holes.observe(this, new Observer<List<Hole>>() {
+        courseViewModel.holes.observe(this, new Observer<List<Zone>>() {
             @Override
-            public void onChanged(@Nullable List<Hole> holes) {
+            public void onChanged(@Nullable List<Zone> holes) {
                 adapter.setmValues(holes);
                 adapter.notifyDataSetChanged();
             }
