@@ -20,10 +20,13 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.text.InputType;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 
@@ -68,7 +71,7 @@ import retrofit2.Response;
 
 
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback {
+        implements OnMapReadyCallback,SearchView.OnQueryTextListener {
 
     private final int PERMISSION_REQUEST = 0;
 
@@ -85,6 +88,7 @@ public class MainActivity extends AppCompatActivity
     public static double playerLat;
     public static double playerLon;
     ElementDrawer drawer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,8 +110,28 @@ public class MainActivity extends AppCompatActivity
         hole = new GolfHole();
         point = new GolfInfoPoint();
         drawer = new ElementDrawer();
+
+
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();;
+        searchView.setOnQueryTextListener(this);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String query) {
+        Log.d("Query",query);
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
 
     private void subscribe() {
         //When Course is chosen

@@ -58,6 +58,7 @@ public class GolfCourseListFragment extends Fragment {
         return fragment;
     }
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,7 +85,7 @@ public class GolfCourseListFragment extends Fragment {
                 PackageManager.PERMISSION_GRANTED) {
 //            Not sure what to do here since the permission is granted in the previous fragment.
         }
-        final double[] latLon = {0,0};
+        final double[] latLon = {0, 0};
 
         mFusedLocationClient.getLastLocation()
                 .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
@@ -98,14 +99,13 @@ public class GolfCourseListFragment extends Fragment {
                     }
                 });
 
-        ApiClientRF client  = ServiceGenerator.getService();
+        ApiClientRF client = ServiceGenerator.getService();
         Call<List<Zone>> call = client.getZones();
-        subscribeAdapter();
 
         call.enqueue(new Callback<List<Zone>>() {
             @Override
             public void onResponse(Call<List<Zone>> call, Response<List<Zone>> response) {
-                if(response.isSuccessful()){
+                if (response.isSuccessful()) {
                     Log.d("CoursesCall", response.body().get(0).getZoneName());
                     courseViewModel.courses.setValue(response.body());
                 }
@@ -113,32 +113,35 @@ public class GolfCourseListFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<Zone>> call, Throwable t) {
-                Log.d("CoursesCall","Call to getCourse failed: " + t.getMessage());
+                Log.d("CoursesCall", "Call to getCourse failed: " + t.getMessage());
             }
         });
 
         // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            adapter = new MyGolfCourseListRecyclerViewAdapter(zoneModels,courseViewModel);
-            recyclerView.setAdapter(adapter);
+        Context context = view.getContext();
+        RecyclerView recyclerView = view.findViewById(R.id.list);
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+        adapter = new MyGolfCourseListRecyclerViewAdapter(zoneModels, courseViewModel);
+        recyclerView.setAdapter(adapter);
+
+        subscribeAdapter();
+
         return view;
     }
 
-    private void subscribeAdapter(){
+    private void subscribeAdapter() {
         courseViewModel.courses.observe(this, new Observer<List<Zone>>() {
             @Override
             public void onChanged(@Nullable List<Zone> courses) {
-                Log.d("Hey",courses.get(0).getZoneName());
-                adapter.mValues =  courses;
-                adapter.notifyDataSetChanged();
+                Log.d("Hey", courses.get(0).getZoneName());
+                if (adapter != null) {
+                    adapter.mValues = courses;
+                    adapter.notifyDataSetChanged();
+                }
             }
         });
     }
