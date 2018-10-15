@@ -19,6 +19,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +32,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import recrec.golfcourseviewer.Activity.MainActivity;
 import recrec.golfcourseviewer.Adapter.MyGolfCourseListRecyclerViewAdapter;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
@@ -41,7 +43,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class GolfCourseListFragment extends Fragment {
+public class GolfCourseListFragment extends Fragment implements SearchView.OnQueryTextListener {
 
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
@@ -57,6 +59,7 @@ public class GolfCourseListFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,14 +80,15 @@ public class GolfCourseListFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_golfcourselist_list, container, false);
         courseViewModel = ViewModelProviders.of(getActivity()).get(CourseViewModel.class);
-
+        SearchView searchView = view.findViewById(R.id.search_view);
+        searchView.setOnQueryTextListener(this);
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
         if (ActivityCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED) {
 //            Not sure what to do here since the permission is granted in the previous fragment.
         }
-        final double[] latLon = {0,0};
+        final double[] latLon = {0, 0};
 
         mFusedLocationClient.getLastLocation()
                 .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
@@ -98,14 +102,13 @@ public class GolfCourseListFragment extends Fragment {
                     }
                 });
 
-        ApiClientRF client  = ServiceGenerator.getService();
+        ApiClientRF client = ServiceGenerator.getService();
         Call<List<Zone>> call = client.getZones();
-        subscribeAdapter();
 
         call.enqueue(new Callback<List<Zone>>() {
             @Override
             public void onResponse(Call<List<Zone>> call, Response<List<Zone>> response) {
-                if(response.isSuccessful()){
+                if (response.isSuccessful()) {
                     Log.d("CoursesCall", response.body().get(0).getZoneName());
                     courseViewModel.courses.setValue(response.body());
                 }
@@ -113,32 +116,36 @@ public class GolfCourseListFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<Zone>> call, Throwable t) {
-                Log.d("CoursesCall","Call to getCourse failed: " + t.getMessage());
+                Log.d("CoursesCall", "Call to getCourse failed: " + t.getMessage());
             }
         });
 
         // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            adapter = new MyGolfCourseListRecyclerViewAdapter(zoneModels,courseViewModel);
-            recyclerView.setAdapter(adapter);
+        Context context = view.getContext();
+        RecyclerView recyclerView = view.findViewById(R.id.list);
+        if (mColumnCount <= 1) {
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+        adapter = new MyGolfCourseListRecyclerViewAdapter(zoneModels, courseViewModel);
+        recyclerView.setAdapter(adapter);
+
+        subscribeAdapter();
+
         return view;
     }
 
-    private void subscribeAdapter(){
+    private void subscribeAdapter() {
         courseViewModel.courses.observe(this, new Observer<List<Zone>>() {
             @Override
             public void onChanged(@Nullable List<Zone> courses) {
-                Log.d("Hey",courses.get(0).getZoneName());
-                adapter.mValues =  courses;
-                adapter.notifyDataSetChanged();
+                Log.d("Hey", courses.get(0).getZoneName());
+                if (adapter != null) {
+                    adapter.mValues = courses;
+                    adapter.mFilter = courses;
+                    adapter.notifyDataSetChanged();
+                }
             }
         });
     }
@@ -153,4 +160,15 @@ public class GolfCourseListFragment extends Fragment {
         super.onDetach();
     }
 
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+       // this.adapter.getFilter().filter(query);
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        this.adapter.getFilter().filter(newText);
+        return false;
+    }
 }

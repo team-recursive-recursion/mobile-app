@@ -57,8 +57,9 @@ public class Map extends Fragment {
         courseViewModel.distanceToHole.observe(getActivity(), new Observer<Double>() {
             @Override
             public void onChanged(@Nullable Double aDouble) {
+                String recommend = recommendClub(aDouble);
                 distanceToHole.setText(String.format(Locale.UK,"%3.2fm",
-                        aDouble));
+                        aDouble)+"\n"+recommend);
             }
         });
         weather = view.findViewById(R.id.txt_weather);
@@ -103,6 +104,29 @@ public class Map extends Fragment {
             }
         });
         return view;
+    }
+
+    public static String recommendClub(double dist) {
+        String[] clubs = {
+                "Driver", "3-wood", "2-iron", "3-iron", "4-iron", "5-iron",
+                "6-iron", "7-iron", "8-iron", "9-iron", "Pitching wedge",
+                "Sand wedge", "Lob wedge"
+        };
+        double[] distances = {
+                200,180,165,155,146,137,128,119,110,101,91,78,55
+        };
+
+        // find nearest distance
+        double smallest = Math.abs(dist - distances[0]);
+        int    smallestIndex = 0;
+        for (int i = 1; i < distances.length; ++i) {
+            double diff = Math.abs(dist - distances[i]);
+            if (diff < smallest) {
+                smallest = diff;
+                smallestIndex = i;
+            }
+        }
+        return clubs[smallestIndex];
     }
 
     @Override
