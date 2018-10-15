@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -108,23 +109,32 @@ public class ElementDrawer {
                         map.addPolygon(opt);
                     }
                     else {
-                    String geoJson = elem.getGeoJson();
-                    JSONObject geoJsonObject = new JSONObject(geoJson);
-                    JSONArray coords = geoJsonObject.getJSONArray("coordinates");
-                    MarkerOptions opt = new MarkerOptions();
-                    LatLng latlonObj = new LatLng(coords.getDouble(1), coords.getDouble(0));
-                    opt.position(latlonObj);
-                    switch(elem.getClassType()){
-                        case 0: opt.title("Pin");
-                            break;
-                        case 1: opt.title("Hole");
-                            break;
-                        case 2: opt.title("Tee");
-                            break;
-                    }
-                    opt.snippet(elem.getInfo());
-                    map.addMarker(opt);
-                    createClickPointListener(map);
+                        String geoJson = elem.getGeoJson();
+                        JSONObject geoJsonObject = new JSONObject(geoJson);
+                        JSONArray coords = geoJsonObject.getJSONArray("coordinates");
+                        MarkerOptions opt = new MarkerOptions();
+                        LatLng latlonObj = new LatLng(coords.getDouble(1), coords.getDouble(0));
+                        opt.position(latlonObj);
+                        switch(elem.getClassType()){
+                            case 0: {
+                                opt.title("Pin");
+
+                            }
+                                break;
+                            case 1: {
+                                opt.title("Hole");
+                                opt.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+                            }
+                                break;
+                            case 2: {
+                                opt.title("Tee");
+                                opt.icon(BitmapDescriptorFactory.fromResource(R.drawable.tee));
+                            }
+                                break;
+                        }
+                        opt.snippet(elem.getInfo());
+                        map.addMarker(opt);
+                        createClickPointListener(map);
 
                     }
                 }

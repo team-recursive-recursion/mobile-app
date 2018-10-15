@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity
 
     private GoogleMap map;
 
+    private String currHoleId;
+
     private OkHttpClient client;
     private String hostAddress;
 
@@ -118,10 +120,13 @@ public class MainActivity extends AppCompatActivity
         final OnMapReadyCallback mcb = this;
         golfCourseListViewModel.
                 holeID.observe(this, new Observer<String>() {
+
             @Override
             public void onChanged(@Nullable String s) {
+                centerOnHole(golfCourseListViewModel.holeID.getValue());
                 createCourse();
                 setFragment("Map");
+
                 // Get Map ready
                 if (map == null) {
                     Map activeMapFragment = (Map) getSupportFragmentManager()
@@ -142,9 +147,10 @@ public class MainActivity extends AppCompatActivity
                     } else {
                         mFusedLocationClient.requestLocationUpdates
                                 (mLocationRequest, locationCallback, t.getLooper());
-                        centerOnHole(s);
+
                     }
                 }
+                centerOnHole(golfCourseListViewModel.holeID.getValue());
             }
         });
 
@@ -181,6 +187,7 @@ public class MainActivity extends AppCompatActivity
         final int numHoles = innerZoneList.size();
         final int count[] = new int[1];
         count[0] = 0;
+        centerOnHole(golfCourseListViewModel.holeID.getValue());
         for (final Zone hole : innerZoneList) {
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
@@ -196,16 +203,16 @@ public class MainActivity extends AppCompatActivity
                                 golfCourseListViewModel.zoneList.setValue(fullHoleList);
                             }
                         }
-
                         @Override
                         public void onFailure(Call<Zone> call, Throwable t) {
                             count[0]++;
                         }
                     });
                 }
-            }, 1000);
-
+            }, 1500);
+            centerOnHole(golfCourseListViewModel.holeID.getValue());
         }
+
 
     }
 
@@ -251,8 +258,8 @@ public class MainActivity extends AppCompatActivity
                     PERMISSION_REQUEST);
         } else {
             map.setMyLocationEnabled(true);
-
-            centerOnPlayer();
+        //  centerOnHole(currHoleId);
+         //   centerOnPlayer();
         }
 
 //         Location handling and sending to web socket.
@@ -265,6 +272,14 @@ public class MainActivity extends AppCompatActivity
         t.start();
         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                 locationCallback, t.getLooper());
+
+        golfCourseListViewModel.zoneList.observe(this, new Observer<List<Zone>>() {
+            @Override
+            public void onChanged(@Nullable List<Zone> zones) {
+                centerOnHole(golfCourseListViewModel.holeID.getValue());
+            }
+        });
+        //centerOnHole(golfCourseListViewModel.holeID.getValue());
 
     }
 
