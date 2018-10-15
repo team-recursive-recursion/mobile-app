@@ -88,8 +88,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(recrec.golfcourseviewer.R.layout.activity_main);
         client = new OkHttpClient();
-        drawer = new ElementDrawer();
         golfCourseListViewModel = ViewModelProviders.of(this).get(CourseViewModel.class);
+        drawer = new ElementDrawer(golfCourseListViewModel);
         subscribe();
         // ask the user for a URL
 
