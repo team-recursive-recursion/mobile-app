@@ -2,11 +2,9 @@ package recrec.golfcourseviewer.Activity;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -20,16 +18,10 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.SearchView;
-import android.text.InputType;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -351,7 +343,8 @@ public class MainActivity extends AppCompatActivity
                 e.printStackTrace();
             }
         }
-        final double distance = (holeLoc == null) ? 0 : player.distanceTo(holeLoc);
+        final double distance = (holeLoc == null || player == null) ?
+                0 : player.distanceTo(holeLoc);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
