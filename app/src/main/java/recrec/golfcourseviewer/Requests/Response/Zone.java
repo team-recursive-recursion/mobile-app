@@ -5,7 +5,6 @@ import java.util.List;
 public class Zone {
     private String zoneID;
     private String zoneName;
-    private String userId;
     private String info	;
     private List<Zone> innerZones;
     private List<Element> elements;
@@ -16,10 +15,6 @@ public class Zone {
 
     public String getZoneName() {
         return zoneName;
-    }
-
-    public String getUserId() {
-        return userId;
     }
 
     public String getInfo() {

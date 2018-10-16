@@ -7,20 +7,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
-import recrec.golfcourseviewer.Requests.Response.Hole;
 import recrec.golfcourseviewer.Requests.Response.Zone;
-
 import java.util.List;
 
-/**
- * {@link RecyclerView.Adapter} that can display a and makes a call to the
- * specified {}.
- * TODO: Replace the implementation with code for your data type.
- */
-public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHolesListRecyclerViewAdapter.ViewHolder> {
+public class MyHolesListRecyclerViewAdapter extends
+        RecyclerView.Adapter<MyHolesListRecyclerViewAdapter.ViewHolder> {
     private List<Zone> mValues;
     private CourseViewModel courseViewModel;
     private Context fragmentActivity;
@@ -67,9 +60,9 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
         public ViewHolder(View view, final CourseViewModel vm) {
             super(view);
             mView = view;
-            mIdView = (TextView) view.findViewById(R.id.item_number);
-            mContentView = (TextView) view.findViewById(R.id.content);
-            mInfoView = (TextView) view.findViewById(R.id.hole_info);
+            mIdView = view.findViewById(R.id.item_number);
+            mContentView = view.findViewById(R.id.content);
+            mInfoView = view.findViewById(R.id.hole_info);
             mIdView.setText(String.valueOf(++counter));
 
             mView.setOnClickListener(new View.OnClickListener() {
@@ -84,7 +77,8 @@ public class MyHolesListRecyclerViewAdapter extends RecyclerView.Adapter<MyHoles
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '"
+                    + mContentView.getText() + "'";
         }
     }
 }

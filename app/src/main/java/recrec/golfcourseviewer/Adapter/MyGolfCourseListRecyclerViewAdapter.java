@@ -22,14 +22,16 @@ import recrec.golfcourseviewer.Requests.Response.Zone;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<MyGolfCourseListRecyclerViewAdapter.ViewHolder> {
+public class MyGolfCourseListRecyclerViewAdapter extends
+        RecyclerView.Adapter<MyGolfCourseListRecyclerViewAdapter.ViewHolder> {
 
     public List<Zone> mValues;
     public List<Zone> mFilter;
 
     private CourseViewModel courseVM;
 
-    public MyGolfCourseListRecyclerViewAdapter(List<Zone> items, CourseViewModel courseListViewModel) {
+    public MyGolfCourseListRecyclerViewAdapter(List<Zone> items,
+                                       CourseViewModel courseListViewModel) {
         courseVM = courseListViewModel;
         mValues = items;
         mFilter = items;
@@ -70,7 +72,8 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String courseID = mValues.get(getAdapterPosition()).getZoneID();
+                    String courseID = mValues.get(getAdapterPosition())
+                            .getZoneID();
                     c.courseID.setValue(courseID);
                     Log.d("Course clicked Id: ", courseID);
                 }
@@ -91,7 +94,8 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
 
             @SuppressWarnings("unchecked")
             @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
+            protected void publishResults(CharSequence constraint,
+                                          FilterResults results) {
 
                 mValues = (List<Zone>) results.values;
                 notifyDataSetChanged();
@@ -108,7 +112,8 @@ public class MyGolfCourseListRecyclerViewAdapter extends RecyclerView.Adapter<My
                     constraint = constraint.toString().toLowerCase();
                     for (int i = 0; i < mFilter.size(); i++) {
                         String dataNames = mFilter.get(i).getZoneName();
-                        if (dataNames.toLowerCase().contains(constraint.toString())) {
+                        if (dataNames.toLowerCase().contains(constraint
+                                .toString())) {
                             filter.add(mFilter.get(i));
                         }
                     }

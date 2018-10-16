@@ -2,7 +2,6 @@ package recrec.golfcourseviewer.Requests.Response;
 
 public class Element {
     private String geoJson;
-    private String elementId;
     private String zoneID;
     private Zone zone;
     private int elementType;
@@ -12,10 +11,6 @@ public class Element {
 
     public String getGeoJson() {
         return geoJson;
-    }
-
-    public String getElementId() {
-        return elementId;
     }
 
     public String getZoneID() {
