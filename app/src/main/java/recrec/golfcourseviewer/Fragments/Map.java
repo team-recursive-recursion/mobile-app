@@ -11,13 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import java.util.List;
 import java.util.Locale;
-
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
-import recrec.golfcourseviewer.Requests.Response.Hole;
 import recrec.golfcourseviewer.Requests.Response.Zone;
 
 
@@ -54,7 +51,8 @@ public class Map extends Fragment {
         fab = view.findViewById(R.id.next_fab);
         distanceToHole = view.findViewById(R.id.txt_distance);
 
-        courseViewModel.distanceToHole.observe(getActivity(), new Observer<Double>() {
+        courseViewModel.distanceToHole.observe(getActivity(),
+                new Observer<Double>() {
             @Override
             public void onChanged(@Nullable Double aDouble) {
                 String recommend = recommendClub(aDouble);
@@ -63,7 +61,8 @@ public class Map extends Fragment {
             }
         });
         weather = view.findViewById(R.id.txt_weather);
-        courseViewModel.weatherData.observe(this, new Observer<String>() {
+        courseViewModel.weatherData.observe(this,
+                new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 if(!weather.getText().equals(s)){

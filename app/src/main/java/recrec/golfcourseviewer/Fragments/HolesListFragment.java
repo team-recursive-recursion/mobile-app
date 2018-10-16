@@ -13,27 +13,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import recrec.golfcourseviewer.Adapter.MyHolesListRecyclerViewAdapter;
 import recrec.golfcourseviewer.Entity.CourseViewModel;
 import recrec.golfcourseviewer.R;
 import recrec.golfcourseviewer.Requests.ApiClientRF;
-import recrec.golfcourseviewer.Requests.Response.Hole;
 import recrec.golfcourseviewer.Requests.Response.Zone;
 import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the
- * interface.
- */
 public class HolesListFragment extends Fragment {
 
     // TODO: Customize parameter argument names
@@ -41,10 +32,6 @@ public class HolesListFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public HolesListFragment() {
     }
 
@@ -74,18 +61,22 @@ public class HolesListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_holeslist_list, container, false);
-        courseViewModel = ViewModelProviders.of(getActivity()).get(CourseViewModel.class);
+        View view = inflater.inflate(R.layout.fragment_holeslist_list,
+                container, false);
+        courseViewModel = ViewModelProviders.of(getActivity())
+                .get(CourseViewModel.class);
         subscribe();
 
         ApiClientRF clientRF = ServiceGenerator.getService();
-        Call<Zone> call = clientRF.getZones(courseViewModel.courseID.getValue());
+        Call<Zone> call = clientRF.getZones(courseViewModel
+                .courseID.getValue());
 
         call.enqueue(new Callback<Zone>() {
             @Override
             public void onResponse(Call<Zone> call, Response<Zone> response) {
                 if(response.body() != null){
-                    courseViewModel.holes.setValue(response.body().getInnerZones());
+                    courseViewModel.holes.setValue(response.body()
+                            .getInnerZones());
                     courseViewModel.courseZone.setValue(response.body());
                     Log.d("Hole", response.body().getZoneName());
                 }
@@ -104,7 +95,8 @@ public class HolesListFragment extends Fragment {
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+                recyclerView.setLayoutManager(new GridLayoutManager(context,
+                        mColumnCount));
             }
             adapter = new MyHolesListRecyclerViewAdapter(holesList,
                     courseViewModel, getActivity().getApplicationContext());

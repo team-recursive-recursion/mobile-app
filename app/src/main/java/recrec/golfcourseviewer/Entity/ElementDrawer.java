@@ -57,7 +57,8 @@ public class ElementDrawer {
                 if (elem.getElementType()==0){ //Only draw type polygon
                     String geoJson = elem.getGeoJson();
                     JSONObject geoJsonObject = new JSONObject(geoJson);
-                    JSONArray coords = geoJsonObject.getJSONArray("coordinates")
+                    JSONArray coords = geoJsonObject
+                            .getJSONArray("coordinates")
                             .getJSONArray(0);
                     PolygonOptions opt = new PolygonOptions();
                     for (int j = 0; j < coords.length(); ++j) {
@@ -114,7 +115,8 @@ public class ElementDrawer {
                             elem.getZoneID().equals(courseID)) {
                         String geoJson = elem.getGeoJson();
                         JSONObject geoJsonObject = new JSONObject(geoJson);
-                        JSONArray coords = geoJsonObject.getJSONArray("coordinates");
+                        JSONArray coords = geoJsonObject
+                                .getJSONArray("coordinates");
                         MarkerOptions opt = new MarkerOptions();
                         LatLng latlonObj = new LatLng(coords.getDouble(1),
                                 coords.getDouble(0));

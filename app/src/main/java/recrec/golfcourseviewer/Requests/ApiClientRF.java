@@ -16,8 +16,4 @@ public interface ApiClientRF {
     @GET("api/Zones/{ZoneID}")
     Call<Zone> getZones(@Path("ZoneID") String zoneID);
 
-    @GET("api/courses")
-    Call<List<Zone>> getCoursesWithLocation(@Query("latVal") double latVal,
-                                              @Query("lonVal") double lonVal);
-
 }

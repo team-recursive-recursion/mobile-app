@@ -45,8 +45,8 @@ public final class EchoWebSocketListener extends WebSocketListener {
             if(received.has("Weather")){
                 JSONObject weather = received.getJSONObject("Weather");
                 String weatherPrint = weather.getString("name");
-                weatherPrint += ": " + Integer.toString((int)weather.getDouble
-                        ("temp") - KELVINRATIO) + "°C";
+                weatherPrint += ": " + Integer.toString((int)weather
+                        .getDouble("temp") - KELVINRATIO) + "°C";
                 viewModel.weatherData.setValue(weatherPrint);
             }
         } catch (JSONException e) {
@@ -62,7 +62,8 @@ public final class EchoWebSocketListener extends WebSocketListener {
     }
 
     @Override
-    public void onFailure(WebSocket webSocket, Throwable t, @Nullable okhttp3.Response response) {
+    public void onFailure(WebSocket webSocket, Throwable t,
+                          @Nullable okhttp3.Response response) {
         Log.d("web","FAILURE" + t.getMessage());
     }
 }

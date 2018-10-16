@@ -43,7 +43,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class GolfCourseListFragment extends Fragment implements SearchView.OnQueryTextListener {
+public class GolfCourseListFragment extends Fragment
+        implements SearchView.OnQueryTextListener {
 
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
@@ -78,20 +79,23 @@ public class GolfCourseListFragment extends Fragment implements SearchView.OnQue
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_golfcourselist_list, container, false);
-        courseViewModel = ViewModelProviders.of(getActivity()).get(CourseViewModel.class);
+        View view = inflater.inflate(R.layout.fragment_golfcourselist_list,
+                container, false);
+        courseViewModel = ViewModelProviders.of(getActivity())
+                .get(CourseViewModel.class);
         SearchView searchView = view.findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(this);
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
+        mFusedLocationClient = LocationServices
+                .getFusedLocationProviderClient(getActivity());
         if (ActivityCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_COARSE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED) {
-//            Not sure what to do here since the permission is granted in the previous fragment.
         }
         final double[] latLon = {0, 0};
 
         mFusedLocationClient.getLastLocation()
-                .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+                .addOnSuccessListener(getActivity(),
+                        new OnSuccessListener<Location>() {
                     @Override
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
@@ -107,16 +111,19 @@ public class GolfCourseListFragment extends Fragment implements SearchView.OnQue
 
         call.enqueue(new Callback<List<Zone>>() {
             @Override
-            public void onResponse(Call<List<Zone>> call, Response<List<Zone>> response) {
+            public void onResponse(Call<List<Zone>> call,
+                                   Response<List<Zone>> response) {
                 if (response.isSuccessful()) {
-                    Log.d("CoursesCall", response.body().get(0).getZoneName());
+                    Log.d("CoursesCall", response.body()
+                            .get(0).getZoneName());
                     courseViewModel.courses.setValue(response.body());
                 }
             }
 
             @Override
             public void onFailure(Call<List<Zone>> call, Throwable t) {
-                Log.d("CoursesCall", "Call to getCourse failed: " + t.getMessage());
+                Log.d("CoursesCall", "Call to getCourse failed: "
+                        + t.getMessage());
             }
         });
 
@@ -126,9 +133,11 @@ public class GolfCourseListFragment extends Fragment implements SearchView.OnQue
         if (mColumnCount <= 1) {
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
         } else {
-            recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+            recyclerView.setLayoutManager(
+                    new GridLayoutManager(context, mColumnCount));
         }
-        adapter = new MyGolfCourseListRecyclerViewAdapter(zoneModels, courseViewModel);
+        adapter = new MyGolfCourseListRecyclerViewAdapter(zoneModels,
+                courseViewModel);
         recyclerView.setAdapter(adapter);
 
         subscribeAdapter();
@@ -137,7 +146,8 @@ public class GolfCourseListFragment extends Fragment implements SearchView.OnQue
     }
 
     private void subscribeAdapter() {
-        courseViewModel.courses.observe(this, new Observer<List<Zone>>() {
+        courseViewModel.courses.observe(this,
+                new Observer<List<Zone>>() {
             @Override
             public void onChanged(@Nullable List<Zone> courses) {
                 Log.d("Hey", courses.get(0).getZoneName());
