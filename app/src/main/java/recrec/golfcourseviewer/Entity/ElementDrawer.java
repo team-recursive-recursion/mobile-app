@@ -3,6 +3,7 @@ package recrec.golfcourseviewer.Entity;
 import android.content.res.Resources;
 import android.location.Location;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -127,9 +128,13 @@ public class ElementDrawer {
                                 break;
                             case 1:
                                 opt.title("Hole");
+                                opt.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+
                                 break;
                             case 2:
                                 opt.title("Tee");
+                                opt.icon(BitmapDescriptorFactory.fromResource(R.drawable.tee));
+
                                 break;
                         }
                         opt.snippet(elem.getInfo());
