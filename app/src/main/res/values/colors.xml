@@ -9,4 +9,6 @@
     <color name="colorGreen">#66bb6a</color>
     <color name="colorBunker">#dcbf9d</color>
     <color name="colorWater">#4db6ac</color>
+    <color name="notFocus" >#c0c0c0</color>
+    <color name="darkGray">#a9a9a9</color>
 </resources>
