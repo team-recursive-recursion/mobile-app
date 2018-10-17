@@ -1,7 +1,7 @@
 /*
- * Filename: GolfCourseListViewModel.java
+ * Filename: CourseViewModel.java
  * Author: Team Recursive Recursion
- * Class: GolfCourseListViewModel
+ * Class: CourseViewModel
  *       This class extends AndroidViewModel. It is used to implement the
  *       automatic update of LiveData objects.
  * */

@@ -20,14 +20,14 @@ public class ServiceGenerator {
         baseUrl = url;
     }
 
-    /*-------------------------------------------------------------------------
-     * getService
-     *
-     *      Provides the user with an initialized retrofit client from which
-     *      API calls can be made.
-     *      The setBaseUrl function has to be called at least once before this
-     *      function may be called.
-     -------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------
+ * getService
+ *
+ *      Provides the user with an initialized retrofit client from which
+ *      API calls can be made.
+ *      The setBaseUrl function has to be called at least once before this
+ *      function may be called.
+ ----------------------------------------------------------------------------*/
     public static ApiClientRF getService(){
         if(baseUrl == null){
 //            throw new Exception("Base Url not set");

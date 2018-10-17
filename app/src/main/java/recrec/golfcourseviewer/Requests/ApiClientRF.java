@@ -1,3 +1,12 @@
+/*----------------------------------------------------------------------------
+ *   Filename : ApiClientRF.java
+ *   Author : Team Recursive Recursion
+ *   Class : ApiClientRF
+ *
+ *      The ApiClientRF is an interface of the Android architecture component,
+ *      Retrofit. It defines end points to the API that can be called like
+ *      standard Java functions.
+ *----------------------------------------------------------------------------*/
 package recrec.golfcourseviewer.Requests;
 
 import java.util.List;
@@ -6,7 +15,6 @@ import recrec.golfcourseviewer.Requests.Response.Zone;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
-import retrofit2.http.Query;
 
 public interface ApiClientRF {
 

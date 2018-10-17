@@ -1,3 +1,12 @@
+/*----------------------------------------------------------------------------
+ *   Filename : Element.java
+ *   Author : Team Recursive Recursion
+ *   Class : Element
+ *
+ *       The Element class is a model used to store information that needs to
+ *       be drawn on the map. It only has attributes and getter functions
+ *       for each attribute.
+ *----------------------------------------------------------------------------*/
 package recrec.golfcourseviewer.Requests.Response;
 
 public class Element {

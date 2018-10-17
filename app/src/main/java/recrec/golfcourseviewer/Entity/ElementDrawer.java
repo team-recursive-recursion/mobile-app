@@ -1,3 +1,11 @@
+/*----------------------------------------------------------------------------
+ *   Filename : ElementDrawer.java
+ *   Author : Team Recursive Recursion
+ *   Class : ElementDrawer
+ *
+ *       The ElementDrawer is used to store Zone information and draw it onto
+ *       the map.
+ *----------------------------------------------------------------------------*/
 package recrec.golfcourseviewer.Entity;
 
 import android.content.res.Resources;
@@ -21,7 +29,7 @@ import recrec.golfcourseviewer.Requests.Response.Zone;
 public class ElementDrawer {
 
     private List<Zone> zonesCollection;
-    private List<Polygon> poliesOnMap;
+    private List<Polygon> polysOnMap;
     private List<Marker> markerOnMap;
 
     private Zone courseZone;
@@ -29,25 +37,38 @@ public class ElementDrawer {
 
     public ElementDrawer(CourseViewModel vm){
         viewModel = vm;
-        poliesOnMap = new ArrayList<>();
+        polysOnMap = new ArrayList<>();
         markerOnMap = new ArrayList<>();
     }
-
+/*-----------------------------------------------------------------------------
+    addZoneCollection(List<Zone>) : Void
+        This function adds the list of Zones from parameter 1 to the list of
+        Zones used to draw the map.
+-----------------------------------------------------------------------------*/
     public void addZoneCollection(List<Zone> list){
         zonesCollection = list;
         if(courseZone != null){
             zonesCollection.add(courseZone);
         }
     }
-
+/*-----------------------------------------------------------------------------
+    addZone(Zone) : Void
+        This function adds a single Zone from parameter 1 to the list of
+        Zones used to draw the map.
+-----------------------------------------------------------------------------*/
     public void addZone(Zone zoneList){
         courseZone = zoneList;
     }
-
+/*-----------------------------------------------------------------------------
+    drawElements(Resources, GoogleMap) : Void
+        This function draws the Zones onto the GoogleMap (Parameter 2).
+        It uses the Resources Object (Parameter 1) to get access to the
+        color that each Zone should be shaded as.
+-----------------------------------------------------------------------------*/
     public void drawElements(Resources res, GoogleMap map) throws Exception{
         String holeID = viewModel.holeID.getValue();
         String courseID = viewModel.courseID.getValue();
-        for(Polygon p : poliesOnMap){
+        for(Polygon p : polysOnMap){
             p.remove();
         }
         for(Marker m : markerOnMap){
@@ -110,7 +131,7 @@ public class ElementDrawer {
                         opt.strokeColor(res.getColor(R.color.notFocus));
                     }
                     opt.zIndex(zIndex);
-                    poliesOnMap.add(map.addPolygon(opt));
+                    polysOnMap.add(map.addPolygon(opt));
                 }else {
                     if(elem.getZoneID().equals(holeID) ||
                             elem.getZoneID().equals(courseID)) {
@@ -128,12 +149,14 @@ public class ElementDrawer {
                                 break;
                             case 1:
                                 opt.title("Hole");
-                                opt.icon(BitmapDescriptorFactory.fromResource(R.drawable.flag));
+                                opt.icon(BitmapDescriptorFactory
+                                        .fromResource(R.drawable.flag));
 
                                 break;
                             case 2:
                                 opt.title("Tee");
-                                opt.icon(BitmapDescriptorFactory.fromResource(R.drawable.tee));
+                                opt.icon(BitmapDescriptorFactory
+                                        .fromResource(R.drawable.tee));
 
                                 break;
                         }
@@ -145,30 +168,34 @@ public class ElementDrawer {
             }
         }
     }
+/*-----------------------------------------------------------------------------
+    createClickPointListener(GoogleMap) : Void
+        This function creates the onClickPointListener on the GoogleMap Object
+        (Parameter 1)
+-----------------------------------------------------------------------------*/
+    private void createClickPointListener(GoogleMap map){
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Location loc1 = new Location("");
+                loc1.setLatitude(marker.getPosition().latitude);
+                loc1.setLongitude(marker.getPosition().longitude);
 
-        private void createClickPointListener(GoogleMap map){
-            map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker) {
-                    Location loc1 = new Location("");
-                    loc1.setLatitude(marker.getPosition().latitude);
-                    loc1.setLongitude(marker.getPosition().longitude);
-
-                    Location loc2 = new Location("");
-                    loc2.setLatitude(MainActivity.playerLat);
-                    loc2.setLongitude(MainActivity.playerLon);
-                    String title = marker.getTitle();
-                    int pos = title.indexOf(' ');
-                    if(pos != -1){
-                        title = title.substring(0, title.indexOf(' '));
-                    }
-                    marker.setTitle(title+" ("
-                            +Integer.toString((int)loc1.distanceTo(loc2))+"m)");
-
-                    marker.showInfoWindow();
-                    return true;
+                Location loc2 = new Location("");
+                loc2.setLatitude(MainActivity.playerLat);
+                loc2.setLongitude(MainActivity.playerLon);
+                String title = marker.getTitle();
+                int pos = title.indexOf(' ');
+                if(pos != -1){
+                    title = title.substring(0, title.indexOf(' '));
                 }
-            });
-        }
+                marker.setTitle(title+" ("
+                        +Integer.toString((int)loc1.distanceTo(loc2))+"m)");
+
+                marker.showInfoWindow();
+                return true;
+            }
+        });
     }
+}
 

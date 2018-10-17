@@ -113,7 +113,7 @@ public class GolfCourseListFragment extends Fragment
             @Override
             public void onResponse(Call<List<Zone>> call,
                                    Response<List<Zone>> response) {
-                if (response.isSuccessful()) {
+                if (response.body()!= null && !response.body().isEmpty()) {
                     Log.d("CoursesCall", response.body()
                             .get(0).getZoneName());
                     courseViewModel.courses.setValue(response.body());
@@ -144,7 +144,11 @@ public class GolfCourseListFragment extends Fragment
 
         return view;
     }
-
+/*----------------------------------------------------------------------------
+    subscribeAdapter() : void
+        Adds values to the adapter and notifies the change so that the
+        recycler view can be updated.
+-----------------------------------------------------------------------------*/
     private void subscribeAdapter() {
         courseViewModel.courses.observe(this,
                 new Observer<List<Zone>>() {

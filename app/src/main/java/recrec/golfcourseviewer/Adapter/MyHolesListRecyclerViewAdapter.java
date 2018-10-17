@@ -1,3 +1,11 @@
+/*------------------------------------------------------------------------------
+ *  Filename: MyHolesListRecyclerViewAdapter.java
+ *  Author: Team Recursive Recursion
+ *  Class: MyHolesListRecyclerViewAdapter
+ *
+ *      This class extends RecyclerView.Adapter. It is used to keep the list
+ *      of holes up to date.
+ * --------------------------------------------------------------------------*/
 package recrec.golfcourseviewer.Adapter;
 
 import android.content.Context;
@@ -40,7 +48,7 @@ public class MyHolesListRecyclerViewAdapter extends
         holder.mItem = mValues.get(position);
         holder.mContentView.setText(mValues.get(position).getZoneName());
         holder.mInfoView.setText(fragmentActivity.getString(R.string.par)
-                + mValues.get(position).getInfo());
+                .concat(mValues.get(position).getInfo()));
 
     }
     @Override

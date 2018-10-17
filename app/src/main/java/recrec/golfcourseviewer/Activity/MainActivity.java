@@ -1,3 +1,12 @@
+/*----------------------------------------------------------------------------
+*   Filename : MainActivity.java
+*   Author : Team Recursive Recursion
+*   Class : MainActivity
+*
+*       The MainActivity class contains a container in witch various fragments
+*       can be swapped in and out. The main functionality of the app is called
+*       in this activity.
+*----------------------------------------------------------------------------*/
 package recrec.golfcourseviewer.Activity;
 
 import android.Manifest;
@@ -51,8 +60,6 @@ import recrec.golfcourseviewer.Requests.ServiceGenerator;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-
 public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback {
 
@@ -80,7 +87,6 @@ public class MainActivity extends AppCompatActivity
                 .get(CourseViewModel.class);
         drawer = new ElementDrawer(golfCourseListViewModel);
         subscribe();
-        // ask the user for a URL
 
         BottomNavigationView navigation = findViewById(recrec.golfcourseviewer
                 .R.id.navigation);
@@ -95,7 +101,11 @@ public class MainActivity extends AppCompatActivity
 
 
     }
-
+/*-----------------------------------------------------------------------------
+    subscribe() : Void
+        This function subscribes this class to the view model's attributes.
+        Each onChange function of the observer dictates the flow of the program
+ ----------------------------------------------------------------------------*/
     private void subscribe() {
         //When Course is chosen
         golfCourseListViewModel.courseID.observe(this, new Observer<String>() {
@@ -189,8 +199,8 @@ public class MainActivity extends AppCompatActivity
                     Call<Zone> call = client.getZones(hole.getZoneID());
                     call.enqueue(new Callback<Zone>() {
                         @Override
-                        public void onResponse(Call<Zone> call,
-                                           @NonNull Response<Zone> response) {
+                        public void onResponse(@NonNull Call<Zone> call,
+                                    @NonNull Response<Zone> response) {
                             fullHoleList.add(response.body());
                             count[0]++;
                             if (count[0] == numHoles) {
@@ -254,8 +264,6 @@ public class MainActivity extends AppCompatActivity
                     PERMISSION_REQUEST);
         } else {
             map.setMyLocationEnabled(true);
-        //  centerOnHole(currHoleId);
-         //   centerOnPlayer();
         }
 
 //         Location handling and sending to web socket.
@@ -317,7 +325,12 @@ public class MainActivity extends AppCompatActivity
     };
 
     Location holeLoc = null;
-
+/*-----------------------------------------------------------------------------
+        setDistanceToHole(final Location) : Void
+            This function sets the distance from the Location passed as
+            parameter 1 to the current hole. The parameter is usually the player
+            location.
+ ----------------------------------------------------------------------------*/
     public void setDistanceToHole(final Location player) {
         List<Zone> holeList = golfCourseListViewModel.zoneList.getValue();
         String holeId = golfCourseListViewModel.holeID.getValue();
@@ -362,6 +375,11 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    /*-------------------------------------------------------------------------
+        onRequestPermissionsResult(int, String[], int[]) : Void
+            This function get's the permission from the user to use their
+            current location in the application.
+     ------------------------------------------------------------------------*/
     @Override
     public void onRequestPermissionsResult(int request, @NonNull String perm[],
                                            @NonNull int[] grant) {
@@ -377,7 +395,12 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
+/*-----------------------------------------------------------------------------
+    centerOnPlayer() : Void
+        This function focuses the application camera on the player's current
+        location.
+---------------------------------------------------------------------------- */
+    @SuppressWarnings("unused")
     private void centerOnPlayer() throws SecurityException {
         if (map != null) {
             LocationManager locationManager = (LocationManager) getSystemService
@@ -413,7 +436,11 @@ public class MainActivity extends AppCompatActivity
 
         }
     }
-
+    /*-----------------------------------------------------------------------------
+        centerOnHole(String) : Void
+            This function focuses the application camera on the hole referenced
+            by parameter 1.
+    ---------------------------------------------------------------------------- */
     private void centerOnHole(String holeId) {
         if (map != null) {
             try {
@@ -489,7 +516,11 @@ public class MainActivity extends AppCompatActivity
     private Map mapFrag;
     private HolesListFragment holesListFragment;
     String prevFrag = "";
-
+/*-----------------------------------------------------------------------------
+        setFragment(String) : Void
+            This function makes transitioning between fragments easy. Parameter
+            1 is the fragment name to witch you want to transition.
+---------------------------------------------------------------------------- */
     public void setFragment(String fragName) {
         android.support.v4.app.FragmentTransaction ft =
                 getSupportFragmentManager().beginTransaction();
@@ -538,15 +569,18 @@ public class MainActivity extends AppCompatActivity
         prevFrag = fragName;
     }
 
-    /*  WebSocket things    */
     WebSocket ws;
-
+/*-----------------------------------------------------------------------------
+    wsStart() : Void
+        This function makes setting up a connection through a web socket easy.
+        It is called only once.
+-----------------------------------------------------------------------------*/
     private void wsStart() {
 
         Request request = new Request.Builder()
                 .url("ws://" + hostAddress + "/ws").build();
         EchoWebSocketListener listener =
-                new EchoWebSocketListener (this, golfCourseListViewModel);
+                new EchoWebSocketListener (this);
         ws = client.newWebSocket(request, listener);
         client.dispatcher().executorService().shutdown();
     }
