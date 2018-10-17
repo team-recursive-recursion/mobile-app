@@ -1,3 +1,9 @@
+/*
+ * Filename: HolesListFragment.java
+ * Author: Team Recursive Recursion
+ * Class: HolesListFragment
+ *       Displays a list of al the holes from the current course.
+ * */
 package recrec.golfcourseviewer.Fragments;
 
 import android.arch.lifecycle.Observer;
@@ -27,15 +33,12 @@ import retrofit2.Response;
 
 public class HolesListFragment extends Fragment {
 
-    // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    // TODO: Customize parameters
     private int mColumnCount = 1;
-
     public HolesListFragment() {
     }
 
-    // TODO: Customize parameter initialization
+
     @SuppressWarnings("unused")
     public static HolesListFragment newInstance(int columnCount) {
         HolesListFragment fragment = new HolesListFragment();
@@ -105,6 +108,11 @@ public class HolesListFragment extends Fragment {
         return view;
     }
 
+/*----------------------------------------------------------------------------
+subscribe() : void
+    Adds values to the adapter and notifies the change so that the
+    recycler view can be updated.
+-----------------------------------------------------------------------------*/
     private void subscribe(){
         courseViewModel.holes.observe(this, new Observer<List<Zone>>() {
             @Override

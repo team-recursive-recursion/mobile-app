@@ -1,3 +1,12 @@
+/*----------------------------------------------------------------------------
+ *   Filename : Zone.java
+ *   Author : Team Recursive Recursion
+ *   Class : Zone
+ *
+ *      The Zone class is a model used in requests to the API. It stores the
+ *      information retrieved from API requests. It consists only of attributes
+ *      and getter functions for each attribute.
+ *----------------------------------------------------------------------------*/
 package recrec.golfcourseviewer.Requests.Response;
 
 import java.util.List;

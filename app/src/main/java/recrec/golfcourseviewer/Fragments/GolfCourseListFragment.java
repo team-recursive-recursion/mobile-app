@@ -144,7 +144,11 @@ public class GolfCourseListFragment extends Fragment
 
         return view;
     }
-
+/*----------------------------------------------------------------------------
+    subscribeAdapter() : void
+        Adds values to the adapter and notifies the change so that the
+        recycler view can be updated.
+-----------------------------------------------------------------------------*/
     private void subscribeAdapter() {
         courseViewModel.courses.observe(this,
                 new Observer<List<Zone>>() {

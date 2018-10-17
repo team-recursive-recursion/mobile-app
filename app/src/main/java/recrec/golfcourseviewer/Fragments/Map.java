@@ -1,3 +1,11 @@
+/*----------------------------------------------------------------------------
+ *   Filename : Map.java
+ *   Author : Team Recursive Recursion
+ *   Class : Map
+ *
+ *       The Map fragment is used to display the Google map information.
+ *       It displays information like distance to hole and club recommendation.
+ *----------------------------------------------------------------------------*/
 package recrec.golfcourseviewer.Fragments;
 
 import android.arch.lifecycle.Observer;
@@ -23,9 +31,6 @@ public class Map extends Fragment {
     private FloatingActionButton fab;
     private TextView distanceToHole;
     CourseViewModel courseViewModel;
-    private TextView weather;
-
-
 
     public Map() {
         // Required empty public constructor
@@ -58,16 +63,6 @@ public class Map extends Fragment {
                 String recommend = recommendClub(aDouble);
                 distanceToHole.setText(String.format(Locale.UK,"%3.2fm",
                         aDouble)+"\n"+recommend);
-            }
-        });
-        weather = view.findViewById(R.id.txt_weather);
-        courseViewModel.weatherData.observe(this,
-                new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                if(!weather.getText().equals(s)){
-                    weather.setText(s);
-                }
             }
         });
 
@@ -105,6 +100,11 @@ public class Map extends Fragment {
         return view;
     }
 
+/*-----------------------------------------------------------------------------
+    recommendClub(double) : String
+        This function returns the name of a golf club based on the distance
+        passed as parameter 1
+-----------------------------------------------------------------------------*/
     public static String recommendClub(double dist) {
         String[] clubs = {
                 "Driver", "3-wood", "2-iron", "3-iron", "4-iron", "5-iron",

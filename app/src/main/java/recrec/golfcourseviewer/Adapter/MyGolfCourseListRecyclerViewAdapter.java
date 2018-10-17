@@ -1,10 +1,11 @@
-/*
- * Filename: MyGolfCourseListRecyclerViewAdapter.java
- * Author: Team Recursive Recursion
- * Class: MyGolfCourseListRecyclerViewAdapter
- *       This class extends RecyclerView.Adapter. It is used to keep the list
- *       of courses up to date.
- * */
+/*------------------------------------------------------------------------------
+ *  Filename: MyGolfCourseListRecyclerViewAdapter.java
+ *  Author: Team Recursive Recursion
+ *  Class: MyGolfCourseListRecyclerViewAdapter
+ *
+ *      This class extends RecyclerView.Adapter. It is used to keep the list
+ *      of courses up to date.
+ * --------------------------------------------------------------------------*/
 package recrec.golfcourseviewer.Adapter;
 
 import android.support.v7.widget.RecyclerView;
@@ -58,16 +59,16 @@ public class MyGolfCourseListRecyclerViewAdapter extends
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final View mView;
-        public final TextView mCourseNameView;
-        public final TextView mInfo;
-        public String mItem;
+        final View mView;
+        final TextView mCourseNameView;
+        final TextView mInfo;
+        String mItem;
 
-        public ViewHolder(View view, final CourseViewModel c) {
+        ViewHolder(View view, final CourseViewModel c) {
             super(view);
             mView = view;
-            mCourseNameView = (TextView) view.findViewById(R.id.course_name);
-            mInfo = (TextView) view.findViewById(R.id.course_info);
+            mCourseNameView = view.findViewById(R.id.course_name);
+            mInfo =  view.findViewById(R.id.course_info);
 
             mView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -87,7 +88,11 @@ public class MyGolfCourseListRecyclerViewAdapter extends
 
     }
 
-
+/*-----------------------------------------------------------------------------
+    getFilter() : Filter
+        This function returns a filter object to get data based on search
+        criteria.
+---------------------------------------------------------------------------- */
     public Filter getFilter() {
 
         Filter filter = new Filter() {
